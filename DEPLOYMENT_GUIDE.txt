@@ -1,0 +1,112 @@
+# TORNADO OPS — DEPLOYMENT GUIDE
+# Follow these steps exactly. Takes about 15 minutes total.
+
+==============================================================
+STEP 1 — SET UP THE DATABASE IN SUPABASE
+==============================================================
+
+1. Go to https://supabase.com and sign in
+2. Click your project (tornado-ops)
+3. In the left sidebar, click "SQL Editor"
+4. Click "New Query" (top right)
+5. Open the file called "supabase_setup.sql" (included with this guide)
+6. Copy ALL the text from that file
+7. Paste it into the SQL Editor
+8. Click the green "Run" button (or press Ctrl+Enter)
+9. You should see "Success. No rows returned" — this means it worked
+
+Your database now has all the tables and demo data ready.
+
+Demo accounts created:
+- Username: jd       | Password: admin123 | Role: Training Manager
+- Username: karim    | Password: admin123 | Role: Batch Supervisor
+- Username: sara     | Password: admin123 | Role: Supporter
+- Username: layla    | Password: admin123 | Role: Coordinator
+
+==============================================================
+STEP 2 — DEPLOY TO VERCEL
+==============================================================
+
+Option A — Easiest (drag and drop, no coding needed):
+
+1. Go to https://vercel.com and sign in
+2. Click "Add New" → "Project"
+3. Scroll down and click "Upload" (or look for "Deploy from your computer")
+4. Create a folder on your computer called "tornado-ops"
+5. Put the "index.html" file inside that folder
+6. Drag the entire "tornado-ops" folder into Vercel
+7. Click "Deploy"
+8. Wait about 60 seconds
+9. Vercel gives you a link like: https://tornado-ops-abc123.vercel.app
+10. Share that link with your team — done!
+
+Option B — Via GitHub (recommended for updates):
+
+1. Go to https://github.com and create a free account if you don't have one
+2. Click "New repository" → name it "tornado-ops" → click "Create repository"
+3. Upload the index.html file to the repository
+4. Go to Vercel → "Add New Project" → "Import Git Repository"
+5. Connect your GitHub and select the tornado-ops repository
+6. Click "Deploy"
+7. Every time you update the file on GitHub, Vercel auto-updates the live site
+
+==============================================================
+STEP 3 — SHARE WITH YOUR TEAM
+==============================================================
+
+Once deployed, send your team the Vercel link.
+Each person:
+1. Opens the link in any browser (Chrome, Safari, Firefox)
+2. Works on any device — phone, tablet, laptop, desktop
+3. Signs in with their username and password
+4. All data is shared in real-time — everyone sees the same data
+
+To create accounts for your real team members:
+1. Go to Supabase → Table Editor → users table
+2. Click "Insert row"
+3. Fill in: name, username, password, role, color, initials
+4. Save — the person can log in immediately
+
+==============================================================
+STEP 4 — ADD YOUR REAL DATA (optional first step)
+==============================================================
+
+To add your Batch 82 data:
+1. Go to Supabase → SQL Editor → New Query
+2. Run this to create Batch 82:
+
+INSERT INTO batches (name, batch_number, dept, day_current, week_current, 
+  start_date, pass_threshold, supervisor_name, health, attendance_rate, active)
+VALUES ('Batch 82', 82, 'Soccer', 14, 3, '2026-03-17', 70, 'Karim Hassan', 'amber', 91, true);
+
+3. Then add trainees manually via the Coordinator → Trainee Intake screen
+   OR import from your Excel file via the SQL Editor
+
+==============================================================
+TROUBLESHOOTING
+==============================================================
+
+Problem: "Connection error" when logging in
+Solution: Check that you ran the SQL setup file in Supabase correctly
+
+Problem: White screen after deploying
+Solution: Make sure only index.html is in the folder, nothing else
+
+Problem: Can't find the Upload option in Vercel  
+Solution: Look for "Continue with" → choose "Upload" at the bottom of the import page
+
+Problem: Forgot Vercel link
+Solution: Go to vercel.com → your dashboard → click the project → the link is shown
+
+==============================================================
+YOUR CREDENTIALS (save these)
+==============================================================
+
+Supabase Project: https://vtokbsmbahquckoemodq.supabase.co
+Supabase Dashboard: https://app.supabase.com
+
+Demo login:
+- jd / admin123 → Training Manager (full access)
+- karim / admin123 → Batch Supervisor
+- sara / admin123 → Supporter
+- layla / admin123 → Coordinator
