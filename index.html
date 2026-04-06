@@ -3,848 +3,654 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Tornado Ops</title>
-<script>
-// This runs BEFORE anything else - test if JS works at all
-window.JS_WORKS = true;
-</script>
+<title>Tornado Ops — Hudl Training</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;background:#0f1117;color:#e8eaf0;height:100vh;overflow:hidden}
+#login{position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:99}
+#app{position:fixed;inset:0;display:none;flex-direction:column}
+.lbox{background:#161b27;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:36px;width:360px;max-width:94vw}
+.llogo{font-size:22px;font-weight:700;margin-bottom:4px;color:#e8eaf0}.llogo span{color:#3b82f6}
+.lsub{font-size:12px;color:#5a6070;margin-bottom:24px}
+.lbox label{font-size:11px;color:#8b92a8;display:block;margin-bottom:4px;margin-top:12px;font-weight:500}
+.lbox input,.lbox select{width:100%;background:#1e2435;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px 10px;color:#e8eaf0;font-size:13px;outline:none}
+.lbtn{width:100%;margin-top:18px;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+.lbtn:hover{background:#2563eb}
+.lerr{font-size:12px;color:#ef4444;margin-top:6px;min-height:18px;text-align:center}
+.lhint{font-size:11px;color:#5a6070;text-align:center;margin:16px 0 10px}
+.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.dbtn{padding:10px 8px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:#1e2435;cursor:pointer;text-align:center;transition:background .1s}
+.dbtn:hover{background:#252d40}
+.dbtn strong{display:block;color:#e8eaf0;font-size:12px;margin-bottom:2px}
+.dbtn span{font-size:10px;color:#5a6070}
+.tb{background:#161b27;border-bottom:1px solid rgba(255,255,255,.08);height:48px;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}
+.tl{font-weight:700;font-size:14px;color:#e8eaf0}.tl span{color:#3b82f6}
+.tr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ub{background:#1e2435;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 10px 4px 6px;display:flex;align-items:center;gap:7px;font-size:11px;color:#8b92a8}
+.av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+.lo{background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 10px;color:#5a6070;font-size:11px;cursor:pointer}
+.ab2{display:flex;flex:1;overflow:hidden}
+.sb{width:186px;background:#161b27;border-right:1px solid rgba(255,255,255,.08);overflow-y:auto;padding:8px 0;flex-shrink:0}
+.nl{font-size:10px;font-weight:600;color:#5a6070;text-transform:uppercase;letter-spacing:.8px;padding:10px 12px 4px}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;color:#8b92a8;font-size:12px;margin:1px 6px}
+.ni:hover{background:#1e2435;color:#e8eaf0}
+.ni.on{background:rgba(59,130,246,.15);color:#3b82f6}
+.pg{flex:1;overflow-y:auto;padding:18px;background:#0f1117}
+.ph{margin-bottom:16px}.pt{font-size:18px;font-weight:600}.ps{font-size:12px;color:#8b92a8;margin-top:3px}
+.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}
+.kc{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px}
+.kl{font-size:10px;color:#8b92a8;text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}
+.kv{font-size:22px;font-weight:600;line-height:1}.kv.g{color:#22c55e}.kv.a{color:#f59e0b}.kv.r{color:#ef4444}.kv.b{color:#3b82f6}
+.kn{font-size:11px;color:#5a6070;margin-top:3px}
+.card{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:12px}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ct{font-size:13px;font-weight:600}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:10px;color:#5a6070;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:6px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}
+.tbl td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;color:#8b92a8;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl td:first-child{color:#e8eaf0;font-weight:500}
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}
+.pill.g{background:rgba(34,197,94,.12);color:#22c55e}.pill.a{background:rgba(245,158,11,.12);color:#f59e0b}
+.pill.r{background:rgba(239,68,68,.12);color:#ef4444}.pill.b{background:rgba(59,130,246,.12);color:#3b82f6}
+.pill.gr{background:#252d40;color:#8b92a8}
+.al{display:flex;gap:10px;padding:10px 12px;background:#1e2435;border-radius:8px;margin-bottom:8px;border-left:3px solid #f59e0b}
+.al.r{border-left-color:#ef4444}.al.b{border-left-color:#3b82f6}.al.g{border-left-color:#22c55e}
+.ald{width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;margin-top:4px}
+.ald.r{background:#ef4444}.ald.b{background:#3b82f6}
+.alt{font-size:12px;color:#e8eaf0}.alm{font-size:11px;color:#5a6070;margin-top:2px}
+.btn{padding:7px 14px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer}
+.btnp{background:#3b82f6;color:#fff}.btnp:hover{background:#2563eb}
+.btns{background:#1e2435;color:#8b92a8;border:1px solid rgba(255,255,255,.14)}.btns:hover{background:#252d40;color:#e8eaf0}
+.btnd{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.btnsc{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.bsm{padding:4px 10px;font-size:11px}
+.fr{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}
+.fl{font-size:11px;color:#8b92a8;font-weight:500}
+.fi{background:#1e2435;border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:8px 10px;color:#e8eaf0;font-size:12px;outline:none;width:100%}
+.fi:focus{border-color:#3b82f6}
+textarea.fi{resize:vertical;min-height:60px}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.prog{background:#252d40;border-radius:4px;height:5px;overflow:hidden;margin-top:5px}
+.pf{height:100%;border-radius:4px;background:#22c55e}.pf.a{background:#f59e0b}.pf.r{background:#ef4444}
+.si2{background:#1e2435;border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:7px 10px;color:#e8eaf0;font-size:12px;outline:none;width:100%;margin-bottom:12px}
+.si2::placeholder{color:#5a6070}
+.ar{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.ar:last-child{border-bottom:none}
+.an{font-size:12px;font-weight:500}
+.abs{display:flex;gap:4px}
+.ab{padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#252d40;color:#5a6070;font-size:10px;font-weight:600;cursor:pointer}
+.ab.ap{background:rgba(34,197,94,.12);color:#22c55e;border-color:rgba(34,197,94,.3)}
+.ab.al2{background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.3)}
+.ab.aa{background:rgba(239,68,68,.12);color:#ef4444;border-color:rgba(239,68,68,.3)}
+.ab.ao{background:rgba(59,130,246,.12);color:#3b82f6;border-color:rgba(59,130,246,.3)}
+.wa{background:#0d1117;border:1px solid rgba(37,211,102,.25);border-radius:8px;padding:14px;font-size:12px;font-family:monospace;line-height:1.8;white-space:pre-wrap;color:#e8eaf0}
+.wac{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:11px;font-weight:600;cursor:pointer;margin-top:8px;width:fit-content}
+.cr{display:flex;align-items:center;gap:9px;padding:7px 0;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08)}
+.cr:last-child{border-bottom:none}
+.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#1e2435;font-size:10px;color:#fff}
+.chk.on{background:#22c55e;border-color:#22c55e}
+.ckl{font-size:12px;color:#8b92a8}
+.gl{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.gl:last-child{border-bottom:none}
+.gn{font-size:12px;font-weight:500;flex:1}
+.inv{background:#1e2435;border-radius:9px;padding:13px;margin-bottom:8px}
+.invh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.sc{background:#1e2435;border-radius:9px;padding:12px;margin-bottom:8px}
+.sn{font-size:12px;font-weight:600;margin-bottom:8px}
+.sm{display:flex;gap:14px;flex-wrap:wrap}
+.sme{font-size:11px;color:#8b92a8}.sme strong{color:#e8eaf0}
+.toast{position:fixed;bottom:24px;right:24px;background:#161b27;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 18px;font-size:12px;color:#e8eaf0;z-index:9999;max-width:320px;transform:translateY(80px);opacity:0;transition:all .25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.g{border-left:3px solid #22c55e}.toast.r{border-left:3px solid #ef4444}.toast.b{border-left:3px solid #3b82f6}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}
+.modal{background:#161b27;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:24px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto}
+.mt2{font-size:16px;font-weight:600;margin-bottom:4px}.ms2{font-size:12px;color:#8b92a8;margin-bottom:18px}
+.mact{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.bcg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:14px}
+.bc{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;cursor:pointer}
+.bc:hover{border-color:rgba(255,255,255,.2)}
+.bmg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}
+.bml{font-size:10px;color:#5a6070;text-transform:uppercase}.bmv{font-size:15px;font-weight:600;margin-top:2px}
+@media(max-width:640px){.two,.fg2{grid-template-columns:1fr}.sb{display:none}.bcg{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-<div id="root" style="font-family:sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;display:flex;align-items:center;justify-content:center">
-  <div id="boot" style="text-align:center;padding:40px">
-    <div style="font-size:24px;font-weight:700;margin-bottom:8px">TORNADO <span style="color:#3b82f6">OPS</span></div>
-    <div style="color:#5a6070;font-size:13px;margin-bottom:24px">Starting up...</div>
-    <div id="boot-status" style="color:#f59e0b;font-size:12px">Loading...</div>
+
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">TORNADO <span>OPS</span></div>
+    <div class="lsub">Hudl Training Department — Elite Operations</div>
+    <label>Username</label>
+    <input type="text" id="lu" placeholder="jd, karim, sara, layla"/>
+    <label>Password</label>
+    <input type="password" id="lp" placeholder="admin123"/>
+    <div class="lerr" id="lerr"></div>
+    <button class="lbtn" onclick="doLogin()">Sign In →</button>
+    <div class="lhint">Or click your role below — instant access:</div>
+    <div class="dgrid">
+      <div class="dbtn" onclick="login('manager','JD Sanders','#8b5cf6','JD')"><strong>JD Sanders</strong><span>Training Manager</span></div>
+      <div class="dbtn" onclick="login('supervisor','Karim Hassan','#3b82f6','KH')"><strong>Karim Hassan</strong><span>Batch Supervisor</span></div>
+      <div class="dbtn" onclick="login('supporter','Sara Khalil','#22c55e','SK')"><strong>Sara Khalil</strong><span>Supporter</span></div>
+      <div class="dbtn" onclick="login('coordinator','Layla Ibrahim','#f59e0b','LI')"><strong>Layla Ibrahim</strong><span>Coordinator</span></div>
+    </div>
   </div>
 </div>
+
+<div id="app">
+  <div class="tb">
+    <div class="tl">TORNADO <span>OPS</span></div>
+    <div class="tr">
+      <div class="ub"><div class="av" id="uav">JD</div><span id="uname">JD Sanders</span><span style="color:#5a6070">·</span><span id="urole" style="color:#5a6070">Manager</span></div>
+      <button class="lo" onclick="doLogout()">Sign out</button>
+    </div>
+  </div>
+  <div class="ab2">
+    <div class="sb" id="nav"></div>
+    <div class="pg" id="pg"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<div id="ov" style="display:none" class="ov" onclick="if(event.target===this)closeModal()"><div class="modal" id="mb"></div></div>
+
 <script>
+// ── DATA ──────────────────────────────────────────────────────────────
+var D = null;
+var CU = null;
+var curPg = '';
+
+function getD(){
+  if(D) return D;
+  try{ var s=localStorage.getItem('topsv4'); if(s){ D=JSON.parse(s); return D; } }catch(e){}
+  D = defaultData();
+  saveD();
+  return D;
+}
+function saveD(){ try{ localStorage.setItem('topsv4',JSON.stringify(getD())); }catch(e){} }
+
+function defaultData(){
+  return {
+    batches:[
+      {id:'b82',name:'Batch 82',dept:'Soccer',day:14,week:3,trainees:22,start:'2026-03-17',thr:70,sup:'Karim Hassan',health:'amber',att:91,pass:68,out:2,lv:3},
+      {id:'b81',name:'Batch 81',dept:'AMF',day:18,week:4,trainees:28,start:'2026-02-24',thr:70,sup:'Layla Ibrahim',health:'green',att:96,pass:78,out:1,lv:1},
+      {id:'b83',name:'Batch 83',dept:'Soccer',day:3,week:1,trainees:18,start:'2026-04-03',thr:70,sup:'Rami Saad',health:'green',att:100,pass:null,out:0,lv:0},
+      {id:'b80',name:'Batch 80',dept:'AMF',day:22,week:5,trainees:21,start:'2026-02-10',thr:70,sup:'Rami Saad',health:'red',att:84,pass:54,out:4,lv:8},
+    ],
+    trainees:[
+      {id:'t1',bid:'b82',name:'Ahmed Mostafa',nid:'29012345678901',score:87.4,perf:'High',status:'Active',sup:'Sara Khalil'},
+      {id:'t2',bid:'b82',name:'Sara El-Din',nid:'29112345678902',score:79.1,perf:'Average',status:'Active',sup:'Sara Khalil'},
+      {id:'t3',bid:'b82',name:'Ibrahim Hassan',nid:'29212345678903',score:82.0,perf:'High',status:'Outlier',sup:'Ahmed Tarek'},
+      {id:'t4',bid:'b82',name:'Mariam Youssef',nid:'29312345678904',score:74.5,perf:'Average',status:'Outlier',sup:'Ahmed Tarek'},
+      {id:'t5',bid:'b82',name:'Mostafa Saleh',nid:'29412345678905',score:71.2,perf:'Average',status:'Active',sup:'Sara Khalil'},
+      {id:'t6',bid:'b82',name:'Dina Ramadan',nid:'29512345678906',score:68.9,perf:'Average',status:'Active',sup:'Sara Khalil'},
+      {id:'t7',bid:'b82',name:'Omar Khaled',nid:'29612345678907',score:91.2,perf:'High',status:'Active',sup:'Ahmed Tarek'},
+      {id:'t8',bid:'b82',name:'Nadia Farouk',nid:'29712345678908',score:67.0,perf:'Low',status:'Active',sup:'Ahmed Tarek'},
+    ],
+    mistakes:[
+      {id:'m1',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',sup:'Sara Khalil',dt:'2026-04-05'},
+      {id:'m2',bid:'b82',tid:'t1',tn:'Ahmed Mostafa',task:'Location',cat:'Wrong timestamp',sev:'Minor',sup:'Sara Khalil',dt:'2026-04-05'},
+      {id:'m3',bid:'b82',tid:'t2',tn:'Sara El-Din',task:'Base',cat:'Formation misidentification',sev:'Minor',sup:'Sara Khalil',dt:'2026-04-04'},
+      {id:'m4',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',sup:'Sara Khalil',dt:'2026-04-04'},
+      {id:'m5',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',sup:'Sara Khalil',dt:'2026-04-03'},
+    ],
+    feedback:[
+      {id:'f1',bid:'b82',tid:'t1',tn:'Ahmed Mostafa',task:'Location',action:'Re-watch event detection tutorial',imp:'Better',dt:'2026-04-05',sup:'Sara Khalil'},
+      {id:'f2',bid:'b82',tid:'t2',tn:'Sara El-Din',task:'Base',action:'Extra formation drill',imp:'Same',dt:'2026-04-05',sup:'Sara Khalil'},
+    ],
+    fc:[
+      {id:'fc1',bid:'b82',wk:2,tid:'t1',tn:'Ahmed Mostafa',score:81,dec:'Continue'},
+      {id:'fc2',bid:'b82',wk:3,tid:'t5',tn:'Mostafa Saleh',score:65,dec:null},
+      {id:'fc3',bid:'b82',wk:3,tid:'t3',tn:'Ibrahim Hassan',score:58,dec:null},
+      {id:'fc4',bid:'b82',wk:3,tid:'t8',tn:'Nadia Farouk',score:67,dec:null},
+    ],
+    invs:[{id:'INV-007',bid:'b82',dt:'2026-04-05',person:'Ahmed Tarek',ptype:'Supporter',type:'Policy',desc:'Failed to submit attendance 3 consecutive days.',status:'Open',steps:[true,true,false,false,false,false,false]}],
+    leavers:[{id:'lv1',bid:'b82',name:'Khaled Samy',dt:'2026-04-02',reason:'Fail',score:52},{id:'lv2',bid:'b82',name:'Nour Samira',dt:'2026-03-25',reason:'Dropout',score:null}],
+    candidates:[
+      {id:'c1',name:'Ahmed Mostafa',nid:'29012345678901',pts:87.4,perf:'High',status:'Accepted',batch:'Batch 82'},
+      {id:'c2',name:'Sara El-Din',nid:'29112345678902',pts:79.1,perf:'Average',status:'Accepted',batch:'Batch 82'},
+      {id:'c3',name:'Fatima Nour',nid:'30012345678910',pts:63.5,perf:'Low',status:'Rejected',batch:''},
+      {id:'c4',name:'Youssef Adel',nid:'30112345678911',pts:82.0,perf:'High',status:'Pending',batch:''},
+    ],
+    goals:[
+      {name:'Hiring Plans',status:'On Track',p:75},{name:'TagOnce Training',status:'In Progress',p:40},
+      {name:'Educational Program',status:'Planning',p:15},{name:'Scorecard Redesign',status:'On Track',p:60},
+      {name:'Football Data Stability',status:'At Risk',p:30},{name:'After-Hiring Batches',status:'Not Started',p:0},
+      {name:'AMF Action Plan',status:'On Track',p:55},{name:'Ice Hockey Collection',status:'Planning',p:10},
+    ],
+    alerts:[
+      {type:'r',txt:'Batch 80: 4 outlier trainees with re-assessment overdue',time:'2h ago'},
+      {type:'a',txt:'Investigation INV-007 opened: Policy breach — Ahmed Tarek',time:'9:14 AM'},
+      {type:'b',txt:'Batch 80 approaching Day 20 — prepare Ops handover',time:'08:00 AM'},
+    ],
+    attState:{},eodCks:{},reports:[]
+  };
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────
+function login(role, name, color, ini){
+  CU = {role:role, name:name, color:color, ini:ini};
+  try{ sessionStorage.setItem('cu', JSON.stringify(CU)); }catch(e){}
+  document.getElementById('login').style.display = 'none';
+  var app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('uname').textContent = name;
+  document.getElementById('urole').textContent = role;
+  document.getElementById('uav').textContent = ini;
+  document.getElementById('uav').style.background = color;
+  buildNav();
+}
+
+function doLogin(){
+  var u = document.getElementById('lu').value.trim().toLowerCase();
+  var p = document.getElementById('lp').value.trim();
+  var err = document.getElementById('lerr');
+  err.textContent = '';
+  var map = {
+    'jd':    ['manager','JD Sanders','#8b5cf6','JD'],
+    'karim': ['supervisor','Karim Hassan','#3b82f6','KH'],
+    'sara':  ['supporter','Sara Khalil','#22c55e','SK'],
+    'ahmed': ['supporter','Ahmed Tarek','#22c55e','AT'],
+    'layla': ['coordinator','Layla Ibrahim','#f59e0b','LI'],
+  };
+  if(!u){ err.textContent='Enter your username'; return; }
+  var acc = map[u];
+  if(acc && (p===''||p==='admin123')){
+    login(acc[0],acc[1],acc[2],acc[3]);
+  } else {
+    err.textContent = 'Use: jd / karim / sara / layla with password admin123';
+  }
+}
+
+function doLogout(){
+  CU = null;
+  try{ sessionStorage.removeItem('cu'); }catch(e){}
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login').style.display = 'flex';
+}
+
+// Restore session
 (function(){
-  // IMMEDIATE TEST
-  document.getElementById('boot-status').textContent = 'JavaScript is working ✓';
-
-  // Give the page 100ms then launch the full app
-  setTimeout(function(){
-    document.getElementById('boot').innerHTML = 
-      '<div style="font-size:24px;font-weight:700;margin-bottom:8px">TORNADO <span style="color:#3b82f6">OPS</span></div>' +
-      '<div style="color:#22c55e;font-size:13px;margin-bottom:24px">✓ Ready — launching app...</div>';
-    setTimeout(launchApp, 300);
-  }, 100);
-
-  function launchApp(){
-    document.getElementById('root').innerHTML = APP_HTML;
-    applyStyles();
-    initApp();
-  }
-
-  // ── STYLES ────────────────────────────────────────────────────
-  function applyStyles(){
-    var s = document.createElement('style');
-    s.textContent = [
-      '*{box-sizing:border-box;margin:0;padding:0}',
-      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;background:#0f1117;color:#e8eaf0;height:100vh;overflow:hidden}',
-      '#login{position:fixed;inset:0;background:#0f1117;display:flex;align-items:center;justify-content:center;z-index:99}',
-      '.lbox{background:#161b27;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:36px;width:360px;max-width:94vw}',
-      '.llogo{font-size:22px;font-weight:700;margin-bottom:4px;color:#e8eaf0}',
-      '.llogo span{color:#3b82f6}',
-      '.lsub{font-size:12px;color:#5a6070;margin-bottom:24px}',
-      '.lbox label{font-size:11px;color:#8b92a8;display:block;margin-bottom:4px;margin-top:12px;font-weight:500}',
-      '.lbox input,.lbox select{width:100%;background:#1e2435;border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:9px 10px;color:#e8eaf0;font-size:13px;outline:none}',
-      '.lbtn{width:100%;margin-top:18px;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}',
-      '.lbtn:hover{background:#2563eb}',
-      '.lhint{font-size:11px;color:#5a6070;text-align:center;margin:16px 0 10px}',
-      '.dgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}',
-      '.dbtn{padding:10px 8px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:#1e2435;cursor:pointer;text-align:center}',
-      '.dbtn:hover{background:#252d40}',
-      '.dbtn strong{display:block;color:#e8eaf0;font-size:12px;margin-bottom:2px}',
-      '.dbtn span{font-size:10px;color:#5a6070}',
-      '#app{position:fixed;inset:0;display:flex;flex-direction:column}',
-      '.tb{background:#161b27;border-bottom:1px solid rgba(255,255,255,.08);height:48px;display:flex;align-items:center;padding:0 16px;gap:12px;flex-shrink:0}',
-      '.tl{font-weight:700;font-size:14px}.tl span{color:#3b82f6}',
-      '.tr{margin-left:auto;display:flex;align-items:center;gap:8px}',
-      '.ub{background:#1e2435;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:4px 10px 4px 6px;display:flex;align-items:center;gap:7px;font-size:11px;color:#8b92a8}',
-      '.av{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}',
-      '.lo{background:transparent;border:1px solid rgba(255,255,255,.08);border-radius:6px;padding:4px 10px;color:#5a6070;font-size:11px;cursor:pointer}',
-      '.ab2{display:flex;flex:1;overflow:hidden}',
-      '.sb{width:186px;background:#161b27;border-right:1px solid rgba(255,255,255,.08);overflow-y:auto;padding:8px 0;flex-shrink:0}',
-      '.nl{font-size:10px;font-weight:600;color:#5a6070;text-transform:uppercase;letter-spacing:.8px;padding:10px 12px 4px}',
-      '.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;cursor:pointer;color:#8b92a8;font-size:12px;margin:1px 6px}',
-      '.ni:hover{background:#1e2435;color:#e8eaf0}',
-      '.ni.on{background:rgba(59,130,246,.15);color:#3b82f6}',
-      '.pg{flex:1;overflow-y:auto;padding:18px;background:#0f1117}',
-      '.ph{margin-bottom:16px}',
-      '.pt{font-size:18px;font-weight:600}',
-      '.ps{font-size:12px;color:#8b92a8;margin-top:3px}',
-      '.kg{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:14px}',
-      '.kc{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:12px 14px}',
-      '.kl{font-size:10px;color:#8b92a8;text-transform:uppercase;letter-spacing:.6px;font-weight:600;margin-bottom:5px}',
-      '.kv{font-size:22px;font-weight:600;line-height:1}',
-      '.kv.g{color:#22c55e}.kv.a{color:#f59e0b}.kv.r{color:#ef4444}.kv.b{color:#3b82f6}',
-      '.kn{font-size:11px;color:#5a6070;margin-top:3px}',
-      '.card{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:12px}',
-      '.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}',
-      '.ct{font-size:13px;font-weight:600}',
-      '.tbl{width:100%;border-collapse:collapse}',
-      '.tbl th{font-size:10px;color:#5a6070;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:6px 8px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08)}',
-      '.tbl td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);font-size:12px;color:#8b92a8;vertical-align:middle}',
-      '.tbl tr:last-child td{border-bottom:none}',
-      '.tbl td:first-child{color:#e8eaf0;font-weight:500}',
-      '.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600}',
-      '.pill.g{background:rgba(34,197,94,.12);color:#22c55e}',
-      '.pill.a{background:rgba(245,158,11,.12);color:#f59e0b}',
-      '.pill.r{background:rgba(239,68,68,.12);color:#ef4444}',
-      '.pill.b{background:rgba(59,130,246,.12);color:#3b82f6}',
-      '.pill.gr{background:#252d40;color:#8b92a8}',
-      '.al{display:flex;gap:10px;padding:10px 12px;background:#1e2435;border-radius:8px;margin-bottom:8px;border-left:3px solid #f59e0b}',
-      '.al.r{border-left-color:#ef4444}.al.b{border-left-color:#3b82f6}.al.g{border-left-color:#22c55e}',
-      '.ald{width:7px;height:7px;border-radius:50%;background:#f59e0b;flex-shrink:0;margin-top:4px}',
-      '.ald.r{background:#ef4444}.ald.b{background:#3b82f6}',
-      '.alt{font-size:12px;color:#e8eaf0}.alm{font-size:11px;color:#5a6070;margin-top:2px}',
-      '.btn{padding:7px 14px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer}',
-      '.btnp{background:#3b82f6;color:#fff}.btnp:hover{background:#2563eb}',
-      '.btns{background:#1e2435;color:#8b92a8;border:1px solid rgba(255,255,255,.14)}.btns:hover{background:#252d40;color:#e8eaf0}',
-      '.btnd{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3)}',
-      '.btnsc{background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.3)}',
-      '.bsm{padding:4px 10px;font-size:11px}',
-      '.fr{display:flex;flex-direction:column;gap:4px;margin-bottom:12px}',
-      '.fl{font-size:11px;color:#8b92a8;font-weight:500}',
-      '.fi{background:#1e2435;border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:8px 10px;color:#e8eaf0;font-size:12px;outline:none;width:100%}',
-      '.fi:focus{border-color:#3b82f6}',
-      'textarea.fi{resize:vertical;min-height:60px}',
-      '.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}',
-      '.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
-      '.prog{background:#252d40;border-radius:4px;height:5px;overflow:hidden;margin-top:5px}',
-      '.pf{height:100%;border-radius:4px;background:#22c55e}',
-      '.pf.a{background:#f59e0b}.pf.r{background:#ef4444}',
-      '.si2{background:#1e2435;border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:7px 10px;color:#e8eaf0;font-size:12px;outline:none;width:100%;margin-bottom:12px}',
-      '.si2::placeholder{color:#5a6070}',
-      '.ar{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)}',
-      '.ar:last-child{border-bottom:none}',
-      '.an{font-size:12px;font-weight:500}',
-      '.abs{display:flex;gap:4px}',
-      '.ab{padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.1);background:#252d40;color:#5a6070;font-size:10px;font-weight:600;cursor:pointer}',
-      '.ab.ap{background:rgba(34,197,94,.12);color:#22c55e;border-color:rgba(34,197,94,.3)}',
-      '.ab.al2{background:rgba(245,158,11,.12);color:#f59e0b;border-color:rgba(245,158,11,.3)}',
-      '.ab.aa{background:rgba(239,68,68,.12);color:#ef4444;border-color:rgba(239,68,68,.3)}',
-      '.ab.ao{background:rgba(59,130,246,.12);color:#3b82f6;border-color:rgba(59,130,246,.3)}',
-      '.wa{background:#0d1117;border:1px solid rgba(37,211,102,.25);border-radius:8px;padding:14px;font-size:12px;font-family:monospace;line-height:1.8;white-space:pre-wrap;color:#e8eaf0}',
-      '.wac{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.3);color:#25d366;font-size:11px;font-weight:600;cursor:pointer;margin-top:8px;width:fit-content}',
-      '.cr{display:flex;align-items:center;gap:9px;padding:7px 0;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.08)}',
-      '.cr:last-child{border-bottom:none}',
-      '.chk{width:16px;height:16px;border-radius:4px;border:1.5px solid rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#1e2435;font-size:10px;color:#fff}',
-      '.chk.on{background:#22c55e;border-color:#22c55e}',
-      '.ckl{font-size:12px;color:#8b92a8}',
-      '.gl{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08)}',
-      '.gl:last-child{border-bottom:none}',
-      '.gn{font-size:12px;font-weight:500;flex:1}',
-      '.inv{background:#1e2435;border-radius:9px;padding:13px;margin-bottom:8px}',
-      '.invh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}',
-      '.sc{background:#1e2435;border-radius:9px;padding:12px;margin-bottom:8px}',
-      '.sn{font-size:12px;font-weight:600;margin-bottom:8px}',
-      '.sm{display:flex;gap:14px;flex-wrap:wrap}',
-      '.sme{font-size:11px;color:#8b92a8}',
-      '.sme strong{color:#e8eaf0}',
-      '.toast{position:fixed;bottom:24px;right:24px;background:#161b27;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:12px 18px;font-size:12px;color:#e8eaf0;z-index:9999;max-width:320px;transform:translateY(80px);opacity:0;transition:all .25s;pointer-events:none}',
-      '.toast.show{transform:translateY(0);opacity:1}',
-      '.toast.g{border-left:3px solid #22c55e}.toast.r{border-left:3px solid #ef4444}.toast.b{border-left:3px solid #3b82f6}',
-      '.ov{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;display:flex;align-items:center;justify-content:center}',
-      '.modal{background:#161b27;border:1px solid rgba(255,255,255,.14);border-radius:14px;padding:24px;width:480px;max-width:95vw;max-height:90vh;overflow-y:auto}',
-      '.mt2{font-size:16px;font-weight:600;margin-bottom:4px}',
-      '.ms2{font-size:12px;color:#8b92a8;margin-bottom:18px}',
-      '.mact{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}',
-      '.bcg{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin-bottom:14px}',
-      '.bc{background:#161b27;border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;cursor:pointer}',
-      '.bc:hover{border-color:rgba(255,255,255,.2)}',
-      '.bmg{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:10px}',
-      '.bml{font-size:10px;color:#5a6070;text-transform:uppercase}',
-      '.bmv{font-size:15px;font-weight:600;margin-top:2px}',
-      '@media(max-width:640px){.two,.fg2{grid-template-columns:1fr}.sb{display:none}.bcg{grid-template-columns:1fr}}'
-    ].join('\n');
-    document.head.appendChild(s);
-  }
-
-  // ── HTML SHELL ─────────────────────────────────────────────────
-  var APP_HTML = [
-    '<div id="login">',
-    '<div class="lbox">',
-    '<div class="llogo">TORNADO <span>OPS</span></div>',
-    '<div class="lsub">Hudl Training Department — Elite Operations</div>',
-    '<label>Username</label>',
-    '<input type="text" id="lu" placeholder="jd, karim, sara, ahmed, layla"/>',
-    '<label>Password</label>',
-    '<input type="password" id="lp" placeholder="admin123"/>',
-    '<div id="lerr" style="font-size:12px;color:#ef4444;margin-top:6px;min-height:16px"></div>',
-    '<button class="lbtn" id="lbtn">Sign In</button>',
-    '<div class="lhint">Quick access — click any role:</div>',
-    '<div class="dgrid">',
-    '<div class="dbtn" id="d_manager"><strong>JD Sanders</strong><span>Training Manager</span></div>',
-    '<div class="dbtn" id="d_supervisor"><strong>Karim Hassan</strong><span>Batch Supervisor</span></div>',
-    '<div class="dbtn" id="d_supporter"><strong>Sara Khalil</strong><span>Supporter</span></div>',
-    '<div class="dbtn" id="d_coordinator"><strong>Layla Ibrahim</strong><span>Coordinator</span></div>',
-    '</div></div></div>',
-    '<div id="app" style="display:none">',
-    '<div class="tb">',
-    '<div class="tl">TORNADO <span>OPS</span></div>',
-    '<div class="tr">',
-    '<div class="ub"><div class="av" id="uav">JD</div><span id="uname">JD</span><span style="color:#5a6070">·</span><span id="urole" style="color:#5a6070">Manager</span></div>',
-    '<button class="lo" id="lobtn">Sign out</button>',
-    '</div></div>',
-    '<div class="ab2"><div class="sb" id="nav"></div><div class="pg" id="pg"></div></div>',
-    '</div>',
-    '<div id="toast" class="toast"></div>',
-    '<div id="ov" style="display:none" class="ov"><div class="modal" id="mb"></div></div>'
-  ].join('');
-
-  // ── DATA STORE ─────────────────────────────────────────────────
-  function initApp(){
-    // Load or create data
-    var raw = localStorage.getItem('topsdata');
-    if(raw){ try{ D = JSON.parse(raw); }catch(e){ D = makeDefaultData(); } }
-    else { D = makeDefaultData(); save(); }
-
-    // Wire login buttons - direct onclick assignments
-    document.getElementById('lbtn').onclick = doLogin;
-    document.getElementById('lu').onkeydown = function(e){ if(e.key==='Enter') doLogin(); };
-    document.getElementById('lp').onkeydown = function(e){ if(e.key==='Enter') doLogin(); };
-    document.getElementById('d_manager').onclick    = function(){ login('jd'); };
-    document.getElementById('d_supervisor').onclick = function(){ login('karim'); };
-    document.getElementById('d_supporter').onclick  = function(){ login('sara'); };
-    document.getElementById('d_coordinator').onclick= function(){ login('layla'); };
-    document.getElementById('lobtn').onclick = doLogout;
-    document.getElementById('ov').onclick = function(e){ if(e.target===this) closeModal(); };
-
-    // Auto-login if session saved
+  try{
     var s = sessionStorage.getItem('cu');
-    if(s){ try{ CU=JSON.parse(s); showApp(); }catch(e){} }
-  }
+    if(s){ var u=JSON.parse(s); login(u.role,u.name,u.color,u.ini); }
+  }catch(e){}
+})();
 
-  var D = {};
-  var CU = null;
+// ── NAV ───────────────────────────────────────────────────────────────
+var NAVS = {
+  manager:[{sec:'Overview',items:[{id:'mb',t:'All Batches'},{id:'mk',t:'KPIs'},{id:'mr',t:'Reports Inbox'},{id:'mi',t:'Investigations'},{id:'mg',t:'Goals'},{id:'mc',t:'Candidates'}]}],
+  supervisor:[{sec:'Batch 82',items:[{id:'sh',t:'Daily Health'},{id:'sf',t:'Final Check'},{id:'so',t:'Outlier Program'},{id:'ss',t:'Supporters'},{id:'sw',t:'Weekly Report'},{id:'si',t:'Investigations'}]}],
+  supporter:[{sec:'My Day',items:[{id:'pa',t:'Attendance'},{id:'pm',t:'Mistake Log'},{id:'pf',t:'Feedback Log'},{id:'pe',t:'End-of-Day'},{id:'ps',t:'Daily Schedule'}]}],
+  coordinator:[{sec:'Batches',items:[{id:'cb',t:'Batch Setup'},{id:'ci',t:'Trainee Intake'},{id:'ca',t:'Attendance'},{id:'croom',t:'Room Reservations'},{id:'cl',t:'Leavers'}]}]
+};
 
-  function save(){ localStorage.setItem('topsdata', JSON.stringify(D)); }
-
-  function makeDefaultData(){
-    return {
-      batches:[
-        {id:'b82',name:'Batch 82',dept:'Soccer',day:14,week:3,trainees:22,start:'2026-03-17',thr:70,sup:'Karim Hassan',health:'amber',att:91,pass:68,out:2,lv:3},
-        {id:'b81',name:'Batch 81',dept:'AMF',day:18,week:4,trainees:28,start:'2026-02-24',thr:70,sup:'Layla Ibrahim',health:'green',att:96,pass:78,out:1,lv:1},
-        {id:'b83',name:'Batch 83',dept:'Soccer',day:3,week:1,trainees:18,start:'2026-04-03',thr:70,sup:'Rami Saad',health:'green',att:100,pass:null,out:0,lv:0},
-        {id:'b80',name:'Batch 80',dept:'AMF',day:22,week:5,trainees:21,start:'2026-02-10',thr:70,sup:'Rami Saad',health:'red',att:84,pass:54,out:4,lv:8},
-      ],
-      trainees:[
-        {id:'t1',bid:'b82',name:'Ahmed Mostafa',nid:'29012345678901',score:87.4,perf:'High',status:'Active',sup:'Sara Khalil'},
-        {id:'t2',bid:'b82',name:'Sara El-Din',nid:'29112345678902',score:79.1,perf:'Average',status:'Active',sup:'Sara Khalil'},
-        {id:'t3',bid:'b82',name:'Ibrahim Hassan',nid:'29212345678903',score:82.0,perf:'High',status:'Outlier',sup:'Ahmed Tarek'},
-        {id:'t4',bid:'b82',name:'Mariam Youssef',nid:'29312345678904',score:74.5,perf:'Average',status:'Outlier',sup:'Ahmed Tarek'},
-        {id:'t5',bid:'b82',name:'Mostafa Saleh',nid:'29412345678905',score:71.2,perf:'Average',status:'Active',sup:'Sara Khalil'},
-        {id:'t6',bid:'b82',name:'Dina Ramadan',nid:'29512345678906',score:68.9,perf:'Average',status:'Active',sup:'Sara Khalil'},
-        {id:'t7',bid:'b82',name:'Omar Khaled',nid:'29612345678907',score:91.2,perf:'High',status:'Active',sup:'Ahmed Tarek'},
-        {id:'t8',bid:'b82',name:'Nadia Farouk',nid:'29712345678908',score:67.0,perf:'Low',status:'Active',sup:'Ahmed Tarek'},
-      ],
-      mistakes:[
-        {id:'m1',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',occ:'Repeat',sup:'Sara Khalil',dt:'2026-04-05'},
-        {id:'m2',bid:'b82',tid:'t1',tn:'Ahmed Mostafa',task:'Location',cat:'Wrong timestamp',sev:'Minor',occ:'First',sup:'Sara Khalil',dt:'2026-04-05'},
-        {id:'m3',bid:'b82',tid:'t2',tn:'Sara El-Din',task:'Base',cat:'Formation misidentification',sev:'Minor',occ:'Repeat',sup:'Sara Khalil',dt:'2026-04-04'},
-        {id:'m4',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',occ:'Repeat',sup:'Sara Khalil',dt:'2026-04-04'},
-        {id:'m5',bid:'b82',tid:'t5',tn:'Mostafa Saleh',task:'Base',cat:'Missed event',sev:'Major',occ:'Repeat',sup:'Sara Khalil',dt:'2026-04-03'},
-      ],
-      feedback:[
-        {id:'f1',bid:'b82',tid:'t1',tn:'Ahmed Mostafa',task:'Location',action:'Re-watch event detection tutorial',imp:'Better',dt:'2026-04-05',sup:'Sara Khalil'},
-        {id:'f2',bid:'b82',tid:'t2',tn:'Sara El-Din',task:'Base',action:'Extra formation drill',imp:'Same',dt:'2026-04-05',sup:'Sara Khalil'},
-      ],
-      fc:[
-        {id:'fc1',bid:'b82',wk:2,tid:'t1',tn:'Ahmed Mostafa',score:81,dec:'Continue'},
-        {id:'fc2',bid:'b82',wk:2,tid:'t2',tn:'Sara El-Din',score:74,dec:'Continue'},
-        {id:'fc3',bid:'b82',wk:3,tid:'t5',tn:'Mostafa Saleh',score:65,dec:null},
-        {id:'fc4',bid:'b82',wk:3,tid:'t3',tn:'Ibrahim Hassan',score:58,dec:null},
-        {id:'fc5',bid:'b82',wk:3,tid:'t8',tn:'Nadia Farouk',score:67,dec:null},
-      ],
-      invs:[
-        {id:'INV-007',bid:'b82',dt:'2026-04-05',person:'Ahmed Tarek',ptype:'Supporter',type:'Policy',desc:'Failed to submit attendance 3 consecutive days.',status:'Open',finding:null,steps:[true,true,false,false,false,false,false]},
-      ],
-      leavers:[
-        {id:'lv1',bid:'b82',name:'Khaled Samy',dt:'2026-04-02',reason:'Fail',score:52},
-        {id:'lv2',bid:'b82',name:'Nour Samira',dt:'2026-03-25',reason:'Dropout',score:null},
-      ],
-      candidates:[
-        {id:'c1',name:'Ahmed Mostafa',nid:'29012345678901',pts:87.4,perf:'High',status:'Accepted',batch:'Batch 82'},
-        {id:'c2',name:'Sara El-Din',nid:'29112345678902',pts:79.1,perf:'Average',status:'Accepted',batch:'Batch 82'},
-        {id:'c3',name:'Omar Khaled',nid:'29612345678907',pts:91.2,perf:'High',status:'Accepted',batch:'Batch 82'},
-        {id:'c4',name:'Fatima Nour',nid:'30012345678910',pts:63.5,perf:'Low',status:'Rejected',batch:''},
-        {id:'c5',name:'Youssef Adel',nid:'30112345678911',pts:82.0,perf:'High',status:'Pending',batch:''},
-      ],
-      goals:[
-        {name:'Hiring Plans',status:'On Track',p:75},
-        {name:'TagOnce Training Integration',status:'In Progress',p:40},
-        {name:'Educational Program for Trainers',status:'Planning',p:15},
-        {name:'Scorecard Redesign',status:'On Track',p:60},
-        {name:'Football Data Stability',status:'At Risk',p:30},
-        {name:'After-Hiring Batches Service',status:'Not Started',p:0},
-        {name:'AMF Action Plan',status:'On Track',p:55},
-        {name:'Ice Hockey Collection',status:'Planning',p:10},
-      ],
-      attState:{},
-      eodCks:{},
-      reports:[],
-      alerts:[
-        {type:'r',txt:'Batch 80: 4 outlier trainees with re-assessment overdue',time:'2h ago'},
-        {type:'a',txt:'Investigation INV-007 opened: Policy breach — Ahmed Tarek',time:'9:14 AM'},
-        {type:'b',txt:'Batch 80 approaching Day 20 of 25 — prepare Ops handover',time:'08:00 AM'},
-      ]
-    };
-  }
-
-  // ── AUTH ───────────────────────────────────────────────────────
-  var USERS = {
-    jd:    {name:'JD Sanders',   role:'manager',     color:'#8b5cf6',ini:'JD'},
-    karim: {name:'Karim Hassan', role:'supervisor',  color:'#3b82f6',ini:'KH'},
-    sara:  {name:'Sara Khalil',  role:'supporter',   color:'#22c55e',ini:'SK'},
-    ahmed: {name:'Ahmed Tarek',  role:'supporter',   color:'#22c55e',ini:'AT'},
-    layla: {name:'Layla Ibrahim',role:'coordinator', color:'#f59e0b',ini:'LI'},
-  };
-
-  function login(username){
-    var u = USERS[username];
-    if(!u) return;
-    CU = {username:username, name:u.name, role:u.role, color:u.color, ini:u.ini};
-    sessionStorage.setItem('cu', JSON.stringify(CU));
-    showApp();
-  }
-
-  function doLogin(){
-    var u = document.getElementById('lu').value.trim().toLowerCase();
-    var p = document.getElementById('lp').value.trim();
-    document.getElementById('lerr').textContent = '';
-    if(!u){ document.getElementById('lerr').textContent='Enter your username'; return; }
-    if(USERS[u] && (p==='admin123'||p==='')){
-      login(u); return;
-    }
-    document.getElementById('lerr').textContent = 'Wrong username or password. Try: jd / admin123';
-  }
-
-  function doLogout(){
-    CU = null;
-    sessionStorage.removeItem('cu');
-    document.getElementById('app').style.cssText = 'display:none!important';
-    document.getElementById('login').style.cssText = 'display:flex!important';
-  }
-
-  function showApp(){
-    document.getElementById('login').style.cssText = 'display:none!important';
-    document.getElementById('app').style.cssText = 'display:flex!important';
-    document.getElementById('uname').textContent = CU.name;
-    document.getElementById('urole').textContent = CU.role;
-    document.getElementById('uav').textContent = CU.ini;
-    document.getElementById('uav').style.background = CU.color;
-    buildNav();
-  }
-
-  // ── NAV ────────────────────────────────────────────────────────
-  var NAVS = {
-    manager:[
-      {sec:'Overview',items:[{id:'mb',t:'All Batches'},{id:'mk',t:'KPIs'},{id:'mr',t:'Reports Inbox'},{id:'mi',t:'Investigations'},{id:'mg',t:'Goals'},{id:'mc',t:'Candidates'}]}
-    ],
-    supervisor:[
-      {sec:'Batch 82',items:[{id:'sh',t:'Daily Health'},{id:'sf',t:'Final Check'},{id:'so',t:'Outlier Program'},{id:'ss',t:'Supporters'},{id:'sw',t:'Weekly Report'},{id:'si',t:'Investigations'}]}
-    ],
-    supporter:[
-      {sec:'My Day',items:[{id:'pa',t:'Attendance'},{id:'pm',t:'Mistake Log'},{id:'pf',t:'Feedback Log'},{id:'pe',t:'End-of-Day'},{id:'ps',t:'Daily Schedule'}]}
-    ],
-    coordinator:[
-      {sec:'Batches',items:[{id:'cb',t:'Batch Setup'},{id:'ci',t:'Trainee Intake'},{id:'ca',t:'Attendance'},{id:'cr',t:'Room Reservations'},{id:'cl',t:'Leavers'}]}
-    ]
-  };
-
-  var curPg = '';
-  function buildNav(){
-    var cfg = NAVS[CU.role]||[];
-    var html = '';
-    cfg.forEach(function(sec){
-      html += '<div class="nl">'+sec.sec+'</div>';
-      sec.items.forEach(function(item){
-        html += '<div class="ni" id="n_'+item.id+'" onclick="gotoPage(\''+item.id+'\')">'+item.t+'</div>';
-      });
+function buildNav(){
+  var cfg = NAVS[CU.role]||[];
+  var html = '';
+  cfg.forEach(function(sec){
+    html += '<div class="nl">'+sec.sec+'</div>';
+    sec.items.forEach(function(item){
+      html += '<div class="ni" id="n_'+item.id+'" onclick="go(\''+item.id+'\')">'+item.t+'</div>';
     });
-    document.getElementById('nav').innerHTML = html;
-    if(cfg[0]&&cfg[0].items[0]) gotoPage(cfg[0].items[0].id);
-  }
+  });
+  document.getElementById('nav').innerHTML = html;
+  if(cfg[0]&&cfg[0].items[0]) go(cfg[0].items[0].id);
+}
 
-  window.gotoPage = function(id){
-    curPg = id;
-    document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
-    var el = document.getElementById('n_'+id);
-    if(el) el.classList.add('on');
-    var fn = PAGES[id];
-    document.getElementById('pg').innerHTML = fn ? fn() : '<div class="ph"><div class="pt">Coming soon</div></div>';
-  };
+function go(id){
+  curPg = id;
+  document.querySelectorAll('.ni').forEach(function(n){n.classList.remove('on');});
+  var el = document.getElementById('n_'+id);
+  if(el) el.classList.add('on');
+  var fn = PG[id];
+  document.getElementById('pg').innerHTML = fn ? fn() : '<div class="ph"><div class="pt">Coming soon</div></div>';
+}
 
-  // ── HELPERS ────────────────────────────────────────────────────
-  function kc(l,v,c,n){ return '<div class="kc"><div class="kl">'+l+'</div><div class="kv '+(c||'')+'">'+v+'</div>'+(n?'<div class="kn">'+n+'</div>':'')+'</div>'; }
-  function alrt(t,txt,time){ return '<div class="al '+t+'"><div class="ald '+t+'"></div><div><div class="alt">'+txt+'</div><div class="alm">'+time+'</div></div></div>'; }
-  function pill(t,label){ var m={g:'g',a:'a',r:'r',b:'b',High:'g',Average:'b',Low:'r',Active:'g',Outlier:'a',Leaver:'r',Accepted:'g',Rejected:'r',Pending:'a','On Track':'g','In Progress':'b','At Risk':'a','Not Started':'gr',Planning:'gr'}; return '<span class="pill '+(m[t]||m[label]||'gr')+'">'+label+'</span>'; }
+// ── HELPERS ───────────────────────────────────────────────────────────
+function kc(l,v,c,n){ return '<div class="kc"><div class="kl">'+l+'</div><div class="kv '+(c||'')+'">'+v+'</div>'+(n?'<div class="kn">'+n+'</div>':'')+'</div>'; }
+function al(t,txt,time){ return '<div class="al '+t+'"><div class="ald '+t+'"></div><div><div class="alt">'+txt+'</div><div class="alm">'+time+'</div></div></div>'; }
+function pill(c,l){ return '<span class="pill '+c+'">'+l+'</span>'; }
+function pillAuto(val){
+  var m={'High':'g','Average':'b','Low':'r','Active':'g','Outlier':'a','Leaver':'r','Accepted':'g','Rejected':'r','Pending':'a','On Track':'g','In Progress':'b','At Risk':'a','Not Started':'gr','Planning':'gr','Open':'r','Closed':'g','Pass':'g','Fail':'r','Borderline':'a'};
+  return pill(m[val]||'gr',val);
+}
+var _t;
+function toast(msg,type){ var el=document.getElementById('toast'); el.textContent=msg; el.className='toast show '+(type||'g'); clearTimeout(_t); _t=setTimeout(function(){el.className='toast';},3000); }
+function showModal(html){ document.getElementById('mb').innerHTML=html; document.getElementById('ov').style.display='flex'; }
+function closeModal(){ document.getElementById('ov').style.display='none'; }
 
-  var _toast;
-  window.toast = function(msg,type){
-    var el=document.getElementById('toast');
-    el.textContent=msg; el.className='toast show '+(type||'g');
-    clearTimeout(_toast); _toast=setTimeout(function(){el.className='toast';},3000);
-  };
+// ── PAGES ─────────────────────────────────────────────────────────────
+var PG = {};
 
-  window.showModal = function(html){
-    document.getElementById('mb').innerHTML=html;
-    document.getElementById('ov').style.display='flex';
-  };
-  window.closeModal = function(){ document.getElementById('ov').style.display='none'; };
+PG.mb = function(){
+  var d=getD();
+  var tot=d.batches.reduce(function(s,b){return s+b.trainees;},0);
+  var wp=d.batches.filter(function(b){return b.pass;});
+  var avg=wp.length?Math.round(wp.reduce(function(s,b){return s+b.pass;},0)/wp.length):0;
+  var outs=d.batches.reduce(function(s,b){return s+b.out;},0);
+  var lvs=d.batches.reduce(function(s,b){return s+b.lv;},0);
+  return '<div class="ph"><div class="pt">Active Batches</div><div class="ps">'+new Date().toDateString()+' — '+d.batches.length+' batches running</div></div>'+
+  '<div class="kg">'+kc('Total Trainees',tot,'','Across '+d.batches.length+' batches')+kc('Avg Pass Rate',avg+'%','g','Target 65%')+kc('Active Outliers',outs,'a','')+kc('Total Leavers',lvs,'r','')+'</div>'+
+  '<div class="bcg">'+d.batches.map(function(b){
+    var hc=b.health==='green'?'g':b.health==='amber'?'a':'r';
+    return '<div class="bc" onclick="go(\'sh\')">'+'<div style="display:flex;justify-content:space-between;margin-bottom:8px">'+
+    '<div><div style="font-size:14px;font-weight:600">'+b.name+' — '+b.dept+'</div><div style="font-size:11px;color:#5a6070">Week '+b.week+', Day '+b.day+'</div></div>'+
+    pill(hc,b.health.toUpperCase())+'</div>'+
+    '<div class="bmg"><div><div class="bml">Att.</div><div class="bmv">'+b.att+'%</div></div>'+
+    '<div><div class="bml">Pass</div><div class="bmv" style="color:'+(b.pass?(b.pass>=65?'#22c55e':'#ef4444'):'#5a6070')+'">'+(b.pass!==null?b.pass+'%':'—')+'</div></div>'+
+    '<div><div class="bml">Out.</div><div class="bmv" style="color:'+(b.out>0?'#f59e0b':'#22c55e')+'">'+b.out+'</div></div>'+
+    '<div><div class="bml">Left</div><div class="bmv">'+b.lv+'</div></div></div></div>';
+  }).join('')+'</div>'+
+  '<div class="card"><div class="ch"><div class="ct">Alerts</div></div>'+d.alerts.map(function(a){return al(a.type,a.txt,a.time);}).join('')+'</div>';
+};
 
-  // ── PAGES ──────────────────────────────────────────────────────
-  var PAGES = {};
+PG.mk = function(){
+  var d=getD();
+  var cats={};d.mistakes.forEach(function(m){cats[m.cat]=(cats[m.cat]||0)+1;});
+  var sorted=Object.entries(cats).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
+  var max=sorted[0]?sorted[0][1]:1;
+  return '<div class="ph"><div class="pt">Department KPIs</div></div>'+
+  '<div class="kg">'+kc('Avg Conversion','67%','g','Target ≥65%')+kc('Soccer Avg','73%','','')+kc('AMF Avg','69%','','')+kc('Mistakes Logged',d.mistakes.length,'b','')+'</div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Top Mistake Categories</div></div>'+
+  sorted.map(function(e){var p=Math.round(e[1]/max*100);return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+e[0]+'</span><span style="color:#8b92a8">'+e[1]+'</span></div><div class="prog"><div class="pf '+(p>70?'r':p>50?'a':'')+'" style="width:'+p+'%"></div></div></div>';}).join('')+
+  '</div><div class="card"><div class="ch"><div class="ct">Supporter Rankings</div></div>'+
+  '<table class="tbl"><thead><tr><th>Supporter</th><th>Att.</th><th>Feedback</th><th>EOD</th></tr></thead><tbody>'+
+  '<tr><td>Sara Khalil</td><td>'+pill('g','100%')+'</td><td>'+pill('g','98%')+'</td><td>'+pill('g','100%')+'</td></tr>'+
+  '<tr><td>Ahmed Tarek</td><td>'+pill('a','88%')+'</td><td>'+pill('a','82%')+'</td><td>'+pill('r','71%')+'</td></tr>'+
+  '</tbody></table></div></div>';
+};
 
-  PAGES.mb = function(){
-    var tot=D.batches.reduce(function(s,b){return s+b.trainees;},0);
-    var wp=D.batches.filter(function(b){return b.pass;});
-    var avg=wp.length?Math.round(wp.reduce(function(s,b){return s+b.pass;},0)/wp.length):0;
-    var outs=D.batches.reduce(function(s,b){return s+b.out;},0);
-    var lvs=D.batches.reduce(function(s,b){return s+b.lv;},0);
-    return '<div class="ph"><div class="pt">Active Batches</div><div class="ps">'+new Date().toDateString()+' — '+D.batches.length+' batches running</div></div>'+
-    '<div class="kg">'+kc('Total Trainees',tot,'','Across '+D.batches.length+' batches')+kc('Avg Pass Rate',avg+'%','g','Target 65%')+kc('Active Outliers',outs,'a','Across all batches')+kc('Total Leavers',lvs,'r','This cycle')+'</div>'+
-    '<div class="bcg">'+D.batches.map(function(b){
-      var hc=b.health==='green'?'g':b.health==='amber'?'a':'r';
-      return '<div class="bc" onclick="gotoPage(\'sh\')">'+'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">'+
-      '<div><div style="font-size:14px;font-weight:600">'+b.name+' — '+b.dept+'</div><div style="font-size:11px;color:#5a6070">Week '+b.week+', Day '+b.day+' · Started '+b.start+'</div></div>'+
-      pill(b.health,b.health.toUpperCase())+'</div>'+
-      '<div class="bmg"><div><div class="bml">Attendance</div><div class="bmv">'+b.att+'%</div></div>'+
-      '<div><div class="bml">Pass Rate</div><div class="bmv" style="color:'+(b.pass?(b.pass>=65?'#22c55e':'#ef4444'):'#5a6070')+'">'+(b.pass!==null?b.pass+'%':'—')+'</div></div>'+
-      '<div><div class="bml">Outliers</div><div class="bmv" style="color:'+(b.out>0?'#f59e0b':'#22c55e')+'">'+b.out+'</div></div>'+
-      '<div><div class="bml">Leavers</div><div class="bmv">'+b.lv+'</div></div></div></div>';
-    }).join('')+'</div>'+
-    '<div class="card"><div class="ch"><div class="ct">Today\'s Alerts</div></div>'+
-    D.alerts.map(function(a){return alrt(a.type,a.txt,a.time);}).join('')+'</div>';
-  };
+PG.mr = function(){
+  var d=getD();
+  return '<div class="ph"><div class="pt">Reports Inbox</div></div>'+
+  '<div class="card">'+
+  (d.reports.length?'<table class="tbl"><thead><tr><th>Batch</th><th>Week</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>'+
+  d.reports.map(function(r,i){return '<tr><td>'+r.batch+'</td><td>Week '+r.week+'</td><td>'+r.date+'</td><td>'+pillAuto(r.status)+'</td><td><button class="btn btnp bsm" onclick="markRev('+i+')">Review</button></td></tr>';}).join('')+'</tbody></table>':
+  '<div style="color:#5a6070;font-size:12px">No reports submitted yet</div>')+'</div>';
+};
+function markRev(i){ var d=getD(); d.reports[i].status='Reviewed'; saveD(); go('mr'); toast('Reviewed','g'); }
 
-  PAGES.mk = function(){
-    var cats={};
-    D.mistakes.forEach(function(m){cats[m.cat]=(cats[m.cat]||0)+1;});
-    var sorted=Object.entries(cats).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
-    var max=sorted[0]?sorted[0][1]:1;
-    return '<div class="ph"><div class="pt">Department KPIs</div><div class="ps">Aggregate — all batches</div></div>'+
-    '<div class="kg">'+kc('Avg Conversion','67%','g','Target ≥65%')+kc('Soccer Avg','73%','','')+kc('AMF Avg','69%','','')+kc('Mistakes Logged',D.mistakes.length,'b','')+'</div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Top Mistake Categories</div></div>'+
-    sorted.map(function(e){var p=Math.round(e[1]/max*100);return '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span style="color:#e8eaf0">'+e[0]+'</span><span style="color:#8b92a8">'+e[1]+'</span></div><div class="prog"><div class="pf '+(p>70?'r':p>50?'a':'')+'" style="width:'+p+'%"></div></div></div>';}).join('')+'</div>'+
-    '<div class="card"><div class="ch"><div class="ct">Supporter Rankings</div></div>'+
-    '<table class="tbl"><thead><tr><th>Supporter</th><th>Attendance</th><th>Feedback</th><th>EOD</th></tr></thead><tbody>'+
-    '<tr><td>Sara Khalil</td><td>'+pill('g','100%')+'</td><td>'+pill('g','98%')+'</td><td>'+pill('g','100%')+'</td></tr>'+
-    '<tr><td>Ahmed Tarek</td><td>'+pill('a','88%')+'</td><td>'+pill('a','82%')+'</td><td>'+pill('r','71%')+'</td></tr>'+
-    '</tbody></table></div></div>';
-  };
-
-  PAGES.mr = function(){
-    return '<div class="ph"><div class="pt">Reports Inbox</div><div class="ps">'+D.reports.filter(function(r){return r.status==='Submitted';}).length+' pending review</div></div>'+
-    '<div class="card">'+
-    (D.reports.length?'<table class="tbl"><thead><tr><th>Batch</th><th>Week</th><th>Submitted</th><th>Status</th><th></th></tr></thead><tbody>'+
-    D.reports.map(function(r,i){return '<tr><td>'+r.batch+'</td><td>Week '+r.week+'</td><td>'+r.date+'</td><td>'+pill(r.status,r.status)+'</td><td><button class="btn btnp bsm" onclick="markReviewed('+i+')">Review</button></td></tr>';}).join('')+'</tbody></table>':
-    '<div style="color:#5a6070;font-size:12px">No reports submitted yet</div>')+'</div>';
-  };
-  window.markReviewed = function(i){ D.reports[i].status='Reviewed'; save(); gotoPage('mr'); toast('Marked as reviewed','g'); };
-
-  PAGES.mi = function(){
-    var steps=['Incident documented','Evidence collected','Subject interviewed','Witness statements','Finding determined','Action documented','Outcome communicated'];
-    return '<div class="ph"><div class="pt">Investigations Log</div></div>'+
-    D.invs.map(function(v,vi){return '<div class="inv"><div class="invh"><div style="font-size:10px;font-family:monospace;color:#5a6070">'+v.id+' · '+v.dt+'</div>'+pill(v.status==='Open'?'r':'g',v.status.toUpperCase())+'</div>'+
-    '<div style="font-size:13px;font-weight:600;margin-bottom:4px">'+v.type+' — '+v.ptype+': '+v.person+'</div>'+
-    '<div style="font-size:11px;color:#8b92a8;margin-bottom:10px">'+v.desc+'</div>'+
-    '<div style="font-size:11px;color:#5a6070;margin-bottom:8px">Checklist ('+v.steps.filter(Boolean).length+'/7):</div>'+
-    steps.map(function(s,i){return '<div class="cr" onclick="toggleInvStep('+vi+','+i+')"><div class="chk '+(v.steps[i]?'on':'')+'">'+( v.steps[i]?'✓':'')+' </div><div class="ckl">'+(i+1)+'. '+s+'</div></div>';}).join('')+
-    (v.status==='Open'?'<div style="margin-top:10px"><button class="btn btnsc bsm" onclick="closeInv('+vi+')">Close Investigation</button></div>':'')+
-    '</div>';}).join('')+
-    (D.invs.length===0?'<div class="card"><div style="color:#5a6070;font-size:12px">No investigations yet</div></div>':'');
-  };
-  window.toggleInvStep = function(vi,i){ D.invs[vi].steps[i]=!D.invs[vi].steps[i]; save(); gotoPage(curPg); };
-  window.closeInv = function(vi){ D.invs[vi].status='Closed'; D.invs[vi].finding='Substantiated'; save(); toast('Investigation closed','g'); gotoPage(curPg); };
-
-  PAGES.mg = function(){
-    var sc={'On Track':'g','In Progress':'b','Planning':'gr','At Risk':'a','Not Started':'gr'};
-    return '<div class="ph"><div class="pt">Department Goals</div><div class="ps">FY2026</div></div>'+
-    '<div class="card">'+D.goals.map(function(g,i){
-      return '<div class="gl"><div class="gn">'+g.name+'</div>'+
-      '<div style="flex:1;max-width:120px"><div class="prog"><div class="pf '+(g.p<30?'r':g.p<60?'a':'')+'" style="width:'+g.p+'%"></div></div><div style="font-size:10px;color:#5a6070;margin-top:2px">'+g.p+'%</div></div>'+
-      pill(sc[g.status]||'gr',g.status)+
-      '</div>';
-    }).join('')+'</div>';
-  };
-
-  PAGES.mc = function(){
-    return '<div class="ph"><div class="pt">Candidate Pipeline</div><div class="ps">'+D.candidates.length+' candidates</div>'+
-    '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="addCandModal()">+ Add Candidate</button></div></div>'+
-    '<div class="card"><input class="si2" placeholder="Search..." oninput="filterCands(this.value)"/>'+
-    '<table class="tbl" id="ctbl"><thead><tr><th>Name</th><th>National ID</th><th>Points</th><th>Performance</th><th>Status</th></tr></thead>'+
-    '<tbody>'+D.candidates.map(function(c){return '<tr><td>'+c.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+c.nid+'</td><td>'+c.pts+'</td><td>'+pill('',c.perf)+'</td><td>'+pill('',c.status)+'</td></tr>';}).join('')+'</tbody></table></div>';
-  };
-  window.filterCands = function(q){
-    var q2=q.toLowerCase();var el=document.getElementById('ctbl');if(!el)return;
-    el.querySelector('tbody').innerHTML=D.candidates.filter(function(c){return c.name.toLowerCase().includes(q2)||(c.nid||'').includes(q2);}).map(function(c){return '<tr><td>'+c.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+c.nid+'</td><td>'+c.pts+'</td><td>'+pill('',c.perf)+'</td><td>'+pill('',c.status)+'</td></tr>';}).join('');
-  };
-  window.addCandModal = function(){
-    showModal('<div class="mt2">Add Candidate</div><div class="ms2">Add to pipeline database</div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Full name</div><input class="fi" id="ac1"/></div><div class="fr"><div class="fl">National ID</div><input class="fi" id="ac2"/></div></div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Total Points</div><input class="fi" id="ac3" type="number"/></div><div class="fr"><div class="fl">Status</div><select class="fi" id="ac4"><option>Pending</option><option>Accepted</option><option>Rejected</option></select></div></div>'+
-    '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveCand()">Add</button></div>');
-  };
-  window.saveCand = function(){
-    var n=document.getElementById('ac1').value; if(!n){toast('Name required','r');return;}
-    var pts=parseFloat(document.getElementById('ac3').value)||0;
-    D.candidates.push({id:'c'+Date.now(),name:n,nid:document.getElementById('ac2').value,pts:pts,perf:pts>=80?'High':pts>=65?'Average':'Low',status:document.getElementById('ac4').value,batch:''});
-    save();closeModal();toast(n+' added','g');gotoPage('mc');
-  };
-
-  // SUPERVISOR
-  PAGES.sh = function(){
-    var b=D.batches.find(function(x){return x.id==='b82';})||D.batches[0];
-    var outs=D.trainees.filter(function(t){return t.bid===b.id&&t.status==='Outlier';});
-    var persist=getPersist(b.id);
-    return '<div class="ph"><div class="pt">'+b.name+' — Daily Health</div><div class="ps">Week '+b.week+', Day '+b.day+' · '+b.dept+'</div></div>'+
-    '<div class="kg">'+kc('Attendance',b.att+'%',b.att>=90?'g':'a','')+kc('Pass Rate',(b.pass||'—')+(b.pass?'%':''),b.pass?(b.pass>=65?'g':'r'):'','')+kc('Outliers',outs.length,outs.length>0?'a':'g','')+kc('Leavers',b.lv,'','')+'</div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Active Outlier Flags</div></div>'+
-    (outs.length?outs.map(function(t){return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div><div style="font-size:12px;font-weight:500">'+t.name+'</div><div style="font-size:11px;color:#5a6070">Supporter: '+t.sup+'</div></div>'+pill('a','In Program')+'</div>';}).join(''):'<div style="color:#5a6070;font-size:12px">No active outliers</div>')+
-    '</div><div class="card"><div class="ch"><div class="ct">Alerts</div></div>'+
-    D.alerts.map(function(a){return alrt(a.type,a.txt,a.time);}).join('')+
-    '</div></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Persistent Mistake Alerts (3+ same error)</div></div>'+
-    (persist.length?'<table class="tbl"><thead><tr><th>Trainee</th><th>Category</th><th>Count</th><th>Task</th></tr></thead><tbody>'+persist.map(function(p){return '<tr><td>'+p.n+'</td><td>'+p.cat+'</td><td>'+pill(p.cnt>=4?'r':'a',p.cnt+'')+'</td><td>'+p.task+'</td></tr>';}).join('')+'</tbody></table>':'<div style="color:#5a6070;font-size:12px">No persistent mistakes</div>')+
-    '</div>';
-  };
-  function getPersist(bid){
-    var m={};
-    D.mistakes.filter(function(x){return x.bid===bid;}).forEach(function(x){var k=x.tn+'|'+x.cat+'|'+x.task;if(!m[k])m[k]={n:x.tn,cat:x.cat,task:x.task,cnt:0};m[k].cnt++;});
-    return Object.values(m).filter(function(x){return x.cnt>=3;});
-  }
-
-  PAGES.sf = function(){
-    var b=D.batches.find(function(x){return x.id==='b82';})||D.batches[0];
-    var thr=b.thr||70;
-    var cks=D.fc.filter(function(f){return f.bid===b.id&&f.wk===b.week;});
-    var pass=cks.filter(function(f){return f.score>=thr;}).length;
-    var fail=cks.filter(function(f){return f.score<thr-5;}).length;
-    var bord=cks.filter(function(f){return f.score>=thr-5&&f.score<thr;}).length;
-    return '<div class="ph"><div class="pt">Final Check — Week '+b.week+'</div><div class="ps">Pass threshold: '+thr+'% · '+cks.length+' trainees</div>'+
-    '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="enterFCModal()">+ Enter Score</button></div></div>'+
-    '<div class="kg">'+kc('Pass',pass,'g','')+kc('Borderline',bord,'a','')+kc('Fail',fail,'r','')+kc('Pass Rate',cks.length?Math.round(pass/cks.length*100)+'%':'—','','')+'</div>'+
-    '<div class="card"><div class="ch"><div class="ct">Decisions</div></div>'+
-    (cks.length?cks.map(function(fc,i){
-      var st=fc.score>=thr?'Pass':fc.score>=thr-5?'Borderline':'Fail';var cl=st==='Pass'?'g':st==='Borderline'?'a':'r';
-      return '<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">'+
-      '<div style="flex:2;font-size:12px;font-weight:500">'+fc.tn+'</div>'+
-      pill(cl,fc.score+'%')+
-      '<div style="flex:1;font-size:11px;color:'+(cl==='g'?'#22c55e':cl==='a'?'#f59e0b':'#ef4444')+'">'+st+'</div>'+
-      (fc.dec?pill(fc.dec==='Continue'?'g':fc.dec==='Remove'?'r':'a',fc.dec):
-      (st!=='Pass'?'<select class="fi" style="padding:4px 7px;font-size:11px;flex:1.5" onchange="saveFCDec('+i+',this.value)"><option value="">— Decide —</option>'+(st==='Fail'?'<option>Outlier Program</option><option>Remove</option>':'<option>Continue</option><option>Outlier Program</option>')+'</select>':pill('g','Auto continue')))+
-      '</div>';
-    }).join(''):'<div style="color:#5a6070;font-size:12px">No scores entered yet. Click "+ Enter Score" to add.</div>')+
-    '</div>';
-  };
-  window.saveFCDec = function(i,dec){
-    if(!dec)return;
-    var wk=D.batches.find(function(x){return x.id==='b82';}).week;
-    var cks=D.fc.filter(function(f){return f.bid==='b82'&&f.wk===wk;});
-    cks[i].dec=dec;
-    if(dec==='Outlier Program'){var t=D.trainees.find(function(x){return x.id===cks[i].tid;});if(t)t.status='Outlier';}
-    if(dec==='Remove'){var t2=D.trainees.find(function(x){return x.id===cks[i].tid;});if(t2)t2.status='Leaver';}
-    save();toast('Decision saved','g');gotoPage('sf');
-  };
-  window.enterFCModal = function(){
-    var myT=D.trainees.filter(function(t){return t.bid==='b82';});
-    showModal('<div class="mt2">Enter Final Check Score</div>'+
-    '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="fct1"><option value="">— Select —</option>'+myT.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Score (%)</div><input class="fi" id="fct2" type="number" min="0" max="100"/></div>'+
-    '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveFCScore()">Save</button></div>');
-  };
-  window.saveFCScore = function(){
-    var tid=document.getElementById('fct1').value;var sc=parseFloat(document.getElementById('fct2').value);
-    if(!tid||isNaN(sc)){toast('Select trainee and enter score','r');return;}
-    var t=D.trainees.find(function(x){return x.id===tid;});
-    var wk=D.batches.find(function(x){return x.id==='b82';}).week;
-    D.fc.push({id:'fc'+Date.now(),bid:'b82',wk:wk,tid:tid,tn:t.name,score:sc,dec:null});
-    save();closeModal();toast('Score saved for '+t.name,'g');gotoPage('sf');
-  };
-
-  PAGES.so = function(){
-    var outs=D.trainees.filter(function(t){return t.bid==='b82'&&t.status==='Outlier';});
-    return '<div class="ph"><div class="pt">Outlier Program</div><div class="ps">Batch 82 — '+outs.length+' active</div></div>'+
-    (outs.length?outs.map(function(t,i){return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:14px;font-weight:600">'+t.name+'</div>'+pill('a','In Program')+'</div>'+
-    '<div style="font-size:12px;color:#8b92a8;margin-bottom:12px">Score: '+t.score+' · Supporter: '+t.sup+'</div>'+
-    '<div style="display:flex;gap:8px"><button class="btn btnsc bsm" onclick="resolveOut(\''+t.id+'\',true)">✓ Passed</button><button class="btn btnd bsm" onclick="resolveOut(\''+t.id+'\',false)">✕ Remove</button></div></div>';}).join(''):'<div class="card"><div style="color:#5a6070;font-size:12px">No active outliers</div></div>');
-  };
-  window.resolveOut = function(tid,pass){
-    var t=D.trainees.find(function(x){return x.id===tid;});
-    if(t){t.status=pass?'Active':'Leaver';save();toast(t.name+(pass?' returned to batch':' removed'),'g');gotoPage('so');}
-  };
-
-  PAGES.ss = function(){
-    return '<div class="ph"><div class="pt">Supporter Performance</div><div class="ps">Batch 82</div></div>'+
-    ['Sara Khalil','Ahmed Tarek'].map(function(s){
-      var fb=D.feedback.filter(function(f){return f.sup===s;}).length;
-      var m=D.mistakes.filter(function(m){return m.sup===s;}).length;
-      var good=s==='Sara Khalil';
-      return '<div class="sc"><div style="display:flex;justify-content:space-between;align-items:center"><div class="sn">'+s+'</div>'+pill(good?'g':'r',good?'Good Standing':'Issues Flagged')+'</div>'+
-      '<div class="sm"><div class="sme">Feedback sessions <strong>'+fb+'</strong></div><div class="sme">Mistakes logged <strong>'+m+'</strong></div></div>'+
-      (good?'':'<div style="margin-top:10px"><button class="btn btnd bsm" onclick="openInvModal()">Open Investigation</button></div>')+
-      '</div>';
-    }).join('');
-  };
-
-  PAGES.sw = function(){
-    var b=D.batches.find(function(x){return x.id==='b82';})||D.batches[0];
-    return '<div class="ph"><div class="pt">Weekly Report — Week '+b.week+'</div><div class="ps">Auto-generated · '+b.name+'</div></div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Auto-generated metrics</div>'+pill('g','Ready')+'</div>'+
-    '<table class="tbl"><tbody>'+
-    '<tr><td>Attendance rate</td><td style="text-align:right;font-weight:600">'+b.att+'%</td></tr>'+
-    '<tr><td>Pass rate</td><td style="text-align:right;font-weight:600">'+(b.pass?b.pass+'%':'Not assessed')+'</td></tr>'+
-    '<tr><td>Outliers active</td><td style="text-align:right;font-weight:600">'+b.out+'</td></tr>'+
-    '<tr><td>Leavers</td><td style="text-align:right;font-weight:600">'+b.lv+'</td></tr>'+
-    '<tr><td>Mistakes logged</td><td style="text-align:right;font-weight:600">'+D.mistakes.filter(function(m){return m.bid===b.id;}).length+'</td></tr>'+
-    '</tbody></table></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Your Commentary</div></div>'+
-    '<div class="fr"><div class="fl">Key observation</div><textarea class="fi" id="wr1" placeholder="e.g. Trainees improving in Base..."></textarea></div>'+
-    '<div class="fr"><div class="fl">At-risk trainees & action</div><textarea class="fi" id="wr2"></textarea></div>'+
-    '<div class="fr"><div class="fl">Supporter performance note</div><textarea class="fi" id="wr3"></textarea></div>'+
-    '<div class="fr"><div class="fl">Recommendation for next week</div><textarea class="fi" id="wr4"></textarea></div>'+
-    '<button class="btn btnp" onclick="submitReport()">Submit Report</button></div></div>';
-  };
-  window.submitReport = function(){
-    var v=document.getElementById('wr1');if(!v||!v.value){toast('Fill in Key Observation','r');return;}
-    D.reports.push({batch:'Batch 82',week:D.batches.find(function(x){return x.id==='b82';}).week,date:new Date().toLocaleDateString(),status:'Submitted',obs:v.value});
-    save();toast('Report submitted — Training Manager notified','g');
-  };
-
-  PAGES.si = function(){
-    var steps=['Incident documented','Evidence collected','Subject interviewed','Witness statements','Finding determined','Action documented','Outcome communicated'];
-    return '<div class="ph"><div class="pt">Investigations</div>'+
-    '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="openInvModal()">+ Open New Investigation</button></div></div>'+
-    (D.invs.length?D.invs.map(function(v,vi){return '<div class="inv"><div class="invh"><div style="font-size:10px;font-family:monospace;color:#5a6070">'+v.id+' · '+v.dt+'</div>'+pill(v.status==='Open'?'r':'g',v.status.toUpperCase())+'</div>'+
+PG.mi = function(){
+  var d=getD();
+  var steps=['Incident documented','Evidence collected','Subject interviewed','Witness statements','Finding determined','Action documented','Outcome communicated'];
+  return '<div class="ph"><div class="pt">Investigations Log</div></div>'+
+  d.invs.map(function(v,vi){
+    return '<div class="inv"><div class="invh"><div style="font-size:10px;font-family:monospace;color:#5a6070">'+v.id+' · '+v.dt+'</div>'+pillAuto(v.status)+'</div>'+
     '<div style="font-size:13px;font-weight:600;margin-bottom:4px">'+v.type+' — '+v.ptype+': '+v.person+'</div>'+
     '<div style="font-size:11px;color:#8b92a8;margin-bottom:10px">'+v.desc+'</div>'+
     '<div style="font-size:11px;color:#5a6070;margin-bottom:6px">Checklist ('+v.steps.filter(Boolean).length+'/7):</div>'+
-    steps.map(function(s,i){return '<div class="cr" onclick="toggleInvStep('+vi+','+i+')"><div class="chk '+(v.steps[i]?'on':'')+'">'+( v.steps[i]?'✓':'')+' </div><div class="ckl">'+(i+1)+'. '+s+'</div></div>';}).join('')+
-    (v.status==='Open'?'<div style="margin-top:10px"><button class="btn btnsc bsm" onclick="closeInv('+vi+')">Close Investigation</button></div>':'')+
-    '</div>';}).join(''):'<div class="card"><div style="color:#5a6070;font-size:12px">No investigations yet</div></div>');
-  };
-  window.openInvModal = function(){
-    showModal('<div class="mt2">Open Investigation</div>'+
-    '<div class="fr"><div class="fl">Person involved</div><input class="fi" id="iv1"/></div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Person type</div><select class="fi" id="iv2"><option>Trainee</option><option>Supporter</option></select></div>'+
-    '<div class="fr"><div class="fl">Type</div><select class="fi" id="iv3"><option>Policy</option><option>Performance</option><option>Behaviour</option><option>Attendance</option></select></div></div>'+
-    '<div class="fr"><div class="fl">Description</div><textarea class="fi" id="iv4"></textarea></div>'+
-    '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnd" onclick="createInv()">Open</button></div>');
-  };
-  window.createInv = function(){
-    var p=document.getElementById('iv1').value;if(!p){toast('Enter person name','r');return;}
-    var id='INV-'+String(D.invs.length+10).padStart(3,'0');
-    D.invs.unshift({id:id,bid:'b82',dt:new Date().toISOString().split('T')[0],person:p,ptype:document.getElementById('iv2').value,type:document.getElementById('iv3').value,desc:document.getElementById('iv4').value,status:'Open',finding:null,steps:[false,false,false,false,false,false,false]});
-    D.alerts.unshift({type:'r',txt:'New investigation '+id+' opened: '+p,time:'Just now'});
-    save();closeModal();toast('Investigation '+id+' opened','g');gotoPage(curPg);
-  };
+    steps.map(function(s,i){return '<div class="cr" onclick="togStep('+vi+','+i+')"><div class="chk '+(v.steps[i]?'on':'')+'">'+( v.steps[i]?'✓':'')+' </div><div class="ckl">'+(i+1)+'. '+s+'</div></div>';}).join('')+
+    (v.status==='Open'?'<div style="margin-top:10px"><button class="btn btnsc bsm" onclick="clsInv('+vi+')">Close Investigation</button></div>':'')+
+    '</div>';
+  }).join('')+(d.invs.length===0?'<div class="card"><div style="color:#5a6070;font-size:12px">No investigations yet</div></div>':'');
+};
+function togStep(vi,i){ var d=getD(); d.invs[vi].steps[i]=!d.invs[vi].steps[i]; saveD(); go(curPg); }
+function clsInv(vi){ var d=getD(); d.invs[vi].status='Closed'; saveD(); toast('Investigation closed','g'); go(curPg); }
 
-  // SUPPORTER
-  PAGES.pa = function(){
-    var myT=D.trainees.filter(function(t){return t.bid==='b82'&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
-    var lbl={P:'Present',L:'Late',A:'Absent',O:'Online'};
-    if(!D.attState) D.attState={};
-    myT.forEach(function(t){if(!D.attState[t.id])D.attState[t.id]='P';});
-    return '<div class="ph"><div class="pt">Attendance — Day 14</div><div class="ps">Submit by 8:30 AM · '+myT.length+' trainees</div></div>'+
-    '<div class="card"><div class="ch"><div class="ct">My Trainee Group</div></div>'+
-    myT.map(function(t){return '<div class="ar"><div class="an">'+t.name+'</div><div class="abs">'+
-    ['P','L','A','O'].map(function(s){return '<button class="ab '+(D.attState[t.id]===s?{P:'ap',L:'al2',A:'aa',O:'ao'}[s]:'')+'" onclick="setA(\''+t.id+'\',\''+s+'\')">'+lbl[s]+'</button>';}).join('')+
-    '</div></div>';}).join('')+
-    '<div style="margin-top:14px;display:flex;gap:8px">'+
-    '<button class="btn btnp" onclick="subAtt()">Submit Attendance</button>'+
-    '<button class="btn btns" onclick="allPresent()">All Present</button>'+
-    '</div></div>';
-  };
-  window.setA = function(tid,st){D.attState[tid]=st;save();gotoPage('pa');};
-  window.allPresent = function(){D.trainees.filter(function(t){return t.sup==='Sara Khalil';}).forEach(function(t){D.attState[t.id]='P';});save();gotoPage('pa');};
-  window.subAtt = function(){save();toast('Attendance submitted at '+new Date().toLocaleTimeString(),'g');};
+PG.mg = function(){
+  var d=getD();
+  var sc={'On Track':'g','In Progress':'b','Planning':'gr','At Risk':'a','Not Started':'gr'};
+  return '<div class="ph"><div class="pt">Department Goals</div><div class="ps">FY2026</div></div>'+
+  '<div class="card">'+d.goals.map(function(g){
+    return '<div class="gl"><div class="gn">'+g.name+'</div>'+
+    '<div style="flex:1;max-width:120px"><div class="prog"><div class="pf '+(g.p<30?'r':g.p<60?'a':'')+'" style="width:'+g.p+'%"></div></div><div style="font-size:10px;color:#5a6070;margin-top:2px">'+g.p+'%</div></div>'+
+    pill(sc[g.status]||'gr',g.status)+'</div>';
+  }).join('')+'</div>';
+};
 
-  PAGES.pm = function(){
-    var myT=D.trainees.filter(function(t){return t.bid==='b82'&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
-    var myLogs=D.mistakes.filter(function(m){return m.sup==='Sara Khalil';});
-    var cats=['Missed event','Wrong event type','Incorrect player attribution','Wrong timestamp','Formation misidentification','Wrong pressure classification','Incorrect location zone','Freeze frame missed','Validation error'];
-    return '<div class="ph"><div class="pt">Mistake Log</div><div class="ps">After each passive review block</div></div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Log a Mistake</div></div>'+
-    '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="ml1"><option value="">— Select —</option>'+myT.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Task</div><select class="fi" id="ml2">'+['Base','Pressure','Extras','Players','Location','Freeze Frame','Validation'].map(function(t){return '<option>'+t+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Severity</div><select class="fi" id="ml3"><option>Minor</option><option>Major</option></select></div></div>'+
-    '<div class="fr"><div class="fl">Error Category</div><select class="fi" id="ml4">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Description</div><input class="fi" id="ml5" placeholder="Brief description..."/></div>'+
-    '<button class="btn btnp" onclick="subMistake()">Log Mistake</button></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Recent Log</div><span style="font-size:11px;color:#5a6070">'+myLogs.length+' entries</span></div>'+
-    '<table class="tbl"><thead><tr><th>Trainee</th><th>Category</th><th>Task</th><th>Sev.</th></tr></thead><tbody>'+
-    myLogs.slice(-8).map(function(l){return '<tr><td>'+l.tn+'</td><td style="color:#8b92a8">'+l.cat+'</td><td>'+l.task+'</td><td>'+pill(l.sev==='Major'?'r':'a',l.sev)+'</td></tr>';}).join('')+
-    '</tbody></table></div></div>';
-  };
-  window.subMistake = function(){
-    var tid=document.getElementById('ml1').value;var t=D.trainees.find(function(x){return x.id===tid;});
-    if(!t){toast('Select a trainee','r');return;}
-    var cat=document.getElementById('ml4').value;var task=document.getElementById('ml2').value;
-    D.mistakes.push({id:'m'+Date.now(),bid:'b82',tid:tid,tn:t.name,task:task,cat:cat,sev:document.getElementById('ml3').value,occ:'First',sup:'Sara Khalil',dt:new Date().toISOString().split('T')[0]});
-    var cnt=D.mistakes.filter(function(m){return m.tid===tid&&m.cat===cat;}).length;
-    if(cnt>=3){D.alerts.unshift({type:'r',txt:t.name+': '+cnt+'x "'+cat+'" — persistent mistake alert',time:'Just now'});toast('⚠ Persistent mistake ('+cnt+'x) — Supervisor alerted','r');}
-    else toast('Mistake logged','g');
-    save();gotoPage('pm');
-  };
+PG.mc = function(){
+  var d=getD();
+  return '<div class="ph"><div class="pt">Candidate Pipeline</div><div class="ps">'+d.candidates.length+' candidates</div>'+
+  '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="addCandM()">+ Add Candidate</button></div></div>'+
+  '<div class="card"><input class="si2" placeholder="Search..." oninput="filtC(this.value)"/>'+
+  '<table class="tbl" id="ctbl"><thead><tr><th>Name</th><th>National ID</th><th>Points</th><th>Performance</th><th>Status</th></tr></thead>'+
+  '<tbody>'+d.candidates.map(cRow).join('')+'</tbody></table></div>';
+};
+function cRow(c){ return '<tr><td>'+c.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+c.nid+'</td><td>'+c.pts+'</td><td>'+pillAuto(c.perf)+'</td><td>'+pillAuto(c.status)+'</td></tr>'; }
+function filtC(q){ var el=document.getElementById('ctbl'); if(!el)return; var q2=q.toLowerCase(); el.querySelector('tbody').innerHTML=getD().candidates.filter(function(c){return c.name.toLowerCase().includes(q2)||(c.nid||'').includes(q2);}).map(cRow).join(''); }
+function addCandM(){
+  showModal('<div class="mt2">Add Candidate</div>'+
+  '<div class="fg2"><div class="fr"><div class="fl">Full name</div><input class="fi" id="ac1"/></div><div class="fr"><div class="fl">National ID</div><input class="fi" id="ac2"/></div></div>'+
+  '<div class="fg2"><div class="fr"><div class="fl">Total Points</div><input class="fi" id="ac3" type="number"/></div><div class="fr"><div class="fl">Status</div><select class="fi" id="ac4"><option>Pending</option><option>Accepted</option><option>Rejected</option></select></div></div>'+
+  '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveCand()">Add</button></div>');
+}
+function saveCand(){ var n=document.getElementById('ac1').value; if(!n){toast('Name required','r');return;} var pts=parseFloat(document.getElementById('ac3').value)||0; getD().candidates.push({id:'c'+Date.now(),name:n,nid:document.getElementById('ac2').value,pts:pts,perf:pts>=80?'High':pts>=65?'Average':'Low',status:document.getElementById('ac4').value,batch:''}); saveD(); closeModal(); toast(n+' added','g'); go('mc'); }
 
-  PAGES.pf = function(){
-    var myT=D.trainees.filter(function(t){return t.bid==='b82'&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
-    var myFb=D.feedback.filter(function(f){return f.sup==='Sara Khalil';});
-    var cats=['Missed event','Wrong event type','Incorrect player attribution','Wrong timestamp','Formation misidentification'];
-    return '<div class="ph"><div class="pt">Feedback Log</div><div class="ps">After each individual meeting — min 15 min</div></div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Log a Session</div></div>'+
-    '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="fb1"><option value="">— Select —</option>'+myT.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Task discussed</div><select class="fi" id="fb2">'+['Base','Pressure','Location','Freeze Frame'].map(function(t){return '<option>'+t+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Top mistake discussed</div><select class="fi" id="fb3">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Action agreed</div><input class="fi" id="fb4" placeholder="e.g. Re-watch tutorial..."/></div>'+
-    '<div class="fr"><div class="fl">Improvement vs last session</div><select class="fi" id="fb5"><option>First Session</option><option>Better</option><option>Same</option><option>Worse</option></select></div>'+
-    '<button class="btn btnp" onclick="subFb()">Log Session</button></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Improvement Trends</div></div>'+
-    '<table class="tbl"><thead><tr><th>Trainee</th><th>Date</th><th>Trend</th></tr></thead><tbody>'+
-    myFb.map(function(f){return '<tr><td>'+f.tn+'</td><td style="color:#5a6070">'+f.dt+'</td><td>'+pill(f.imp==='Better'?'g':f.imp==='Worse'?'r':f.imp==='Same'?'a':'b',f.imp)+'</td></tr>';}).join('')+
-    '</tbody></table></div></div>';
-  };
-  window.subFb = function(){
-    var tid=document.getElementById('fb1').value;var t=D.trainees.find(function(x){return x.id===tid;});
-    if(!t){toast('Select a trainee','r');return;}
-    D.feedback.push({id:'f'+Date.now(),bid:'b82',tid:tid,tn:t.name,task:document.getElementById('fb2').value,action:document.getElementById('fb4').value,imp:document.getElementById('fb5').value,dt:new Date().toISOString().split('T')[0],sup:'Sara Khalil'});
-    save();toast('Session logged','g');gotoPage('pf');
-  };
+PG.sh = function(){
+  var d=getD(); var b=d.batches[0];
+  var outs=d.trainees.filter(function(t){return t.bid===b.id&&t.status==='Outlier';});
+  var persist=getP(b.id);
+  return '<div class="ph"><div class="pt">'+b.name+' — Daily Health</div><div class="ps">Week '+b.week+', Day '+b.day+' · '+b.dept+'</div></div>'+
+  '<div class="kg">'+kc('Attendance',b.att+'%',b.att>=90?'g':'a','')+kc('Pass Rate',(b.pass||'—')+(b.pass?'%':''),b.pass?(b.pass>=65?'g':'r'):'','')+kc('Outliers',outs.length,outs.length>0?'a':'g','')+kc('Leavers',b.lv,'','')+'</div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Active Outlier Flags</div></div>'+
+  (outs.length?outs.map(function(t){return '<div style="display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.08)"><div><div style="font-size:12px;font-weight:500">'+t.name+'</div><div style="font-size:11px;color:#5a6070">'+t.sup+'</div></div>'+pill('a','In Program')+'</div>';}).join(''):'<div style="color:#5a6070;font-size:12px">No active outliers</div>')+
+  '</div><div class="card"><div class="ch"><div class="ct">Alerts</div></div>'+d.alerts.map(function(a){return al(a.type,a.txt,a.time);}).join('')+'</div></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Persistent Mistakes (3+ same error)</div></div>'+
+  (persist.length?'<table class="tbl"><thead><tr><th>Trainee</th><th>Category</th><th>Count</th><th>Task</th></tr></thead><tbody>'+persist.map(function(p){return '<tr><td>'+p.n+'</td><td>'+p.cat+'</td><td>'+pill(p.cnt>=4?'r':'a',p.cnt+'')+'</td><td>'+p.task+'</td></tr>';}).join('')+'</tbody></table>':'<div style="color:#5a6070;font-size:12px">No persistent mistakes</div>')+
+  '</div>';
+};
+function getP(bid){ var m={}; getD().mistakes.filter(function(x){return x.bid===bid;}).forEach(function(x){var k=x.tn+'|'+x.cat+'|'+x.task;if(!m[k])m[k]={n:x.tn,cat:x.cat,task:x.task,cnt:0};m[k].cnt++;}); return Object.values(m).filter(function(x){return x.cnt>=3;}); }
 
-  PAGES.pe = function(){
-    if(!D.eodCks) D.eodCks={};
-    var items=[{k:'att',l:'Attendance submitted by 8:30 AM'},{k:'pol',l:'Policy items checked for all trainees'},{k:'out',l:'Outlier flags reviewed and updated'},{k:'lv',l:'Leaver events today submitted'},{k:'sch',l:"Tomorrow's schedule posted to WhatsApp"}];
-    return '<div class="ph"><div class="pt">End-of-Day Form</div><div class="ps">Submit before end of shift</div></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Daily Checklist</div></div>'+
-    items.map(function(item){return '<div class="cr" onclick="toggleCk(\''+item.k+'\')"><div class="chk '+(D.eodCks[item.k]?'on':'')+'">'+( D.eodCks[item.k]?'✓':'')+' </div><div class="ckl">'+item.l+'</div></div>';}).join('')+
-    '<div class="fr" style="margin-top:14px"><div class="fl">Escalation for Supervisor?</div><select class="fi" id="esc1"><option value="">No escalation</option><option value="y">Yes</option></select></div>'+
-    '<div class="fr"><div class="fl">Escalation detail</div><textarea class="fi" id="esc2" placeholder="Describe the issue..."></textarea></div>'+
-    '<button class="btn btnp" onclick="subEod()">Submit EOD Form</button></div>';
-  };
-  window.toggleCk = function(k){if(!D.eodCks)D.eodCks={};D.eodCks[k]=!D.eodCks[k];save();gotoPage('pe');};
-  window.subEod = function(){
-    var done=Object.values(D.eodCks||{}).filter(Boolean).length;
-    if(done<3){toast('Complete at least 3 items first','r');return;}
-    var esc=document.getElementById('esc1').value;
-    if(esc==='y'&&!document.getElementById('esc2').value){toast('Describe the escalation','r');return;}
-    if(esc==='y') D.alerts.unshift({type:'a',txt:'EOD escalation from Sara Khalil: '+document.getElementById('esc2').value,time:'Just now'});
-    D.eodCks={};save();toast('EOD form submitted','g');gotoPage('pe');
-  };
+PG.sf = function(){
+  var d=getD(); var b=d.batches[0]; var thr=b.thr||70;
+  var cks=d.fc.filter(function(f){return f.bid===b.id&&f.wk===b.week;});
+  var pass=cks.filter(function(f){return f.score>=thr;}).length;
+  var fail=cks.filter(function(f){return f.score<thr-5;}).length;
+  var bord=cks.filter(function(f){return f.score>=thr-5&&f.score<thr;}).length;
+  return '<div class="ph"><div class="pt">Final Check — Week '+b.week+'</div><div class="ps">Threshold: '+thr+'%</div>'+
+  '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="fcModal()">+ Enter Score</button></div></div>'+
+  '<div class="kg">'+kc('Pass',pass,'g','')+kc('Borderline',bord,'a','')+kc('Fail',fail,'r','')+kc('Rate',cks.length?Math.round(pass/cks.length*100)+'%':'—','','')+'</div>'+
+  '<div class="card"><div class="ch"><div class="ct">Decisions</div></div>'+
+  (cks.length?cks.map(function(fc,i){
+    var st=fc.score>=thr?'Pass':fc.score>=thr-5?'Borderline':'Fail';var cl=st==='Pass'?'g':st==='Borderline'?'a':'r';
+    return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.08)">'+
+    '<div style="flex:2;font-size:12px;font-weight:500">'+fc.tn+'</div>'+pill(cl,fc.score+'%')+
+    '<div style="flex:1;font-size:11px">'+pillAuto(st)+'</div>'+
+    (fc.dec?pillAuto(fc.dec):'<select class="fi" style="padding:3px 6px;font-size:11px;flex:1.5" onchange="saveFD('+i+',this.value)"><option value="">— Decide —</option>'+(st==='Fail'?'<option>Outlier Program</option><option>Remove</option>':'<option>Continue</option><option>Outlier Program</option>')+'</select>')+
+    '</div>';
+  }).join(''):'<div style="color:#5a6070;font-size:12px">No scores yet. Click "+ Enter Score"</div>')+
+  '</div>';
+};
+function saveFD(i,dec){ if(!dec)return; var d=getD(); var b=d.batches[0]; var cks=d.fc.filter(function(f){return f.bid===b.id&&f.wk===b.week;}); cks[i].dec=dec; if(dec==='Outlier Program'){var t=d.trainees.find(function(x){return x.id===cks[i].tid;});if(t)t.status='Outlier';} if(dec==='Remove'){var t2=d.trainees.find(function(x){return x.id===cks[i].tid;});if(t2)t2.status='Leaver';} saveD(); toast('Decision saved','g'); go('sf'); }
+function fcModal(){ var d=getD(); var b=d.batches[0]; showModal('<div class="mt2">Enter Final Check Score</div><div class="fr"><div class="fl">Trainee</div><select class="fi" id="fct1"><option value="">— Select —</option>'+d.trainees.filter(function(t){return t.bid===b.id;}).map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div><div class="fr"><div class="fl">Score (%)</div><input class="fi" id="fct2" type="number" min="0" max="100"/></div><div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveFCS()">Save</button></div>'); }
+function saveFCS(){ var tid=document.getElementById('fct1').value; var sc=parseFloat(document.getElementById('fct2').value); if(!tid||isNaN(sc)){toast('Select trainee and score','r');return;} var d=getD(); var b=d.batches[0]; var t=d.trainees.find(function(x){return x.id===tid;}); d.fc.push({id:'fc'+Date.now(),bid:b.id,wk:b.week,tid:tid,tn:t.name,score:sc,dec:null}); saveD(); closeModal(); toast('Score saved','g'); go('sf'); }
 
-  PAGES.ps = function(){
-    var b=D.batches.find(function(x){return x.id==='b82';})||D.batches[0];
-    var nextDay=b.day+1;
-    var sch={3:'online',5:'onsite',8:'onsite',10:'online',12:'onsite',15:'onsite',16:'onsite',20:'onsite',21:'onsite',25:'onsite'};
-    var type=sch[nextDay]||'online';
-    var tom=new Date();tom.setDate(tom.getDate()+1);
-    var msg='📅 Day '+nextDay+' — '+tom.toDateString()+'\n\n'+(type==='onsite'?'📍 ONSITE — Training Room\n':'💻 ONLINE — Remote\n')+'⏰ Start: 9:00 AM\n\n✅ Tasks:\n• '+(nextDay<=5?'Base · Players · Extras':nextDay<=10?'Pressure · Formations & Facts':nextDay<=15?'Location · Freeze Frame · Formations & Facts':nextDay<=20?'Validation · Formations & Facts':'Full task (45 min pace)')+'\n\n📌 No phones during task blocks\n📖 Reply ✅ to confirm.';
-    return '<div class="ph"><div class="pt">Daily Schedule Generator</div><div class="ps">Day '+nextDay+' tomorrow</div></div>'+
-    '<div class="card"><div class="ch"><div class="ct">WhatsApp Message</div></div>'+
-    '<div class="wa" id="wamsg">'+msg+'</div>'+
-    '<div class="wac" onclick="copyMsg()">📋 Copy to clipboard</div></div>';
-  };
-  window.copyMsg = function(){
-    var el=document.getElementById('wamsg');if(!el)return;
-    navigator.clipboard.writeText(el.textContent).then(function(){toast('Copied — paste into WhatsApp group','g');}).catch(function(){toast('Select the text and copy manually','b');});
-  };
+PG.so = function(){
+  var d=getD(); var outs=d.trainees.filter(function(t){return t.bid==='b82'&&t.status==='Outlier';});
+  return '<div class="ph"><div class="pt">Outlier Program</div><div class="ps">'+outs.length+' active</div></div>'+
+  (outs.length?outs.map(function(t){return '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><div style="font-size:14px;font-weight:600">'+t.name+'</div>'+pill('a','In Program')+'</div><div style="font-size:12px;color:#8b92a8;margin-bottom:12px">Score: '+t.score+' · '+t.sup+'</div><div style="display:flex;gap:8px"><button class="btn btnsc bsm" onclick="resOut(\''+t.id+'\',true)">✓ Passed</button><button class="btn btnd bsm" onclick="resOut(\''+t.id+'\',false)">✕ Remove</button></div></div>';}).join(''):'<div class="card"><div style="color:#5a6070;font-size:12px">No active outliers</div></div>');
+};
+function resOut(tid,pass){ var d=getD(); var t=d.trainees.find(function(x){return x.id===tid;}); if(t){t.status=pass?'Active':'Leaver';saveD();toast(t.name+(pass?' returned':' removed'),'g');go('so');} }
 
-  // COORDINATOR
-  PAGES.cb = function(){
-    return '<div class="ph"><div class="pt">Batch Setup</div>'+
-    '<div style="margin-top:10px"><button class="btn btnp bsm" onclick="createBatchModal()">+ Create New Batch</button></div></div>'+
-    '<div class="card"><table class="tbl"><thead><tr><th>Batch</th><th>Dept</th><th>Day</th><th>Trainees</th><th>Health</th></tr></thead><tbody>'+
-    D.batches.map(function(b){return '<tr><td>'+b.name+'</td><td>'+b.dept+'</td><td>Day '+b.day+'</td><td>'+b.trainees+'</td><td>'+pill(b.health,b.health)+'</td></tr>';}).join('')+
-    '</tbody></table></div>';
-  };
-  window.createBatchModal = function(){
-    showModal('<div class="mt2">Create New Batch</div>'+
-    '<div class="fr"><div class="fl">Batch name</div><input class="fi" id="nb1" placeholder="e.g. Batch 84 — Soccer"/></div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Department</div><select class="fi" id="nb2"><option>Soccer</option><option>AMF</option></select></div>'+
-    '<div class="fr"><div class="fl">Pass threshold (%)</div><input class="fi" id="nb3" type="number" value="70"/></div></div>'+
-    '<div class="fr"><div class="fl">Start date</div><input class="fi" id="nb4" type="date" value="'+new Date().toISOString().split('T')[0]+'"/></div>'+
-    '<div class="fr"><div class="fl">Supervisor</div><select class="fi" id="nb5"><option>Karim Hassan</option><option>Layla Ibrahim</option><option>Rami Saad</option></select></div>'+
-    '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveBatch()">Create</button></div>');
-  };
-  window.saveBatch = function(){
-    var n=document.getElementById('nb1').value;if(!n){toast('Enter batch name','r');return;}
-    D.batches.push({id:'b'+Date.now(),name:n,dept:document.getElementById('nb2').value,day:1,week:1,trainees:0,start:document.getElementById('nb4').value,thr:parseInt(document.getElementById('nb3').value)||70,sup:document.getElementById('nb5').value,health:'green',att:0,pass:null,out:0,lv:0});
-    save();closeModal();toast(n+' created','g');gotoPage('cb');
-  };
+PG.ss = function(){
+  var d=getD();
+  return '<div class="ph"><div class="pt">Supporter Performance</div></div>'+
+  ['Sara Khalil','Ahmed Tarek'].map(function(s){
+    var fb=d.feedback.filter(function(f){return f.sup===s;}).length;
+    var mk=d.mistakes.filter(function(m){return m.sup===s;}).length;
+    var good=s==='Sara Khalil';
+    return '<div class="sc"><div style="display:flex;justify-content:space-between;align-items:center"><div class="sn">'+s+'</div>'+pill(good?'g':'r',good?'Good Standing':'Issues Flagged')+'</div>'+
+    '<div class="sm"><div class="sme">Feedback <strong>'+fb+'</strong></div><div class="sme">Mistakes logged <strong>'+mk+'</strong></div></div>'+
+    (good?'':'<div style="margin-top:10px"><button class="btn btnd bsm" onclick="openInvM()">Open Investigation</button></div>')+
+    '</div>';
+  }).join('');
+};
 
-  PAGES.ci = function(){
-    var b82=D.trainees.filter(function(t){return t.bid==='b82';});
-    return '<div class="ph"><div class="pt">Trainee Intake</div><div class="ps">Batch 82 · '+b82.length+' enrolled</div>'+
-    '<div style="margin-top:10px;display:flex;gap:8px"><button class="btn btnp bsm" onclick="addTraineeModal()">+ Add Trainee</button></div></div>'+
-    '<div class="card"><input class="si2" placeholder="Search trainees..." oninput="filterTrainees(this.value)"/>'+
-    '<table class="tbl" id="ttbl"><thead><tr><th>Name</th><th>National ID</th><th>Score</th><th>Performance</th><th>Supporter</th><th>Status</th></tr></thead>'+
-    '<tbody>'+b82.map(function(t){return '<tr><td>'+t.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+t.nid+'</td><td>'+t.score+'</td><td>'+pill('',t.perf)+'</td><td style="color:#8b92a8">'+t.sup+'</td><td>'+pill('',t.status)+'</td></tr>';}).join('')+'</tbody></table></div>';
-  };
-  window.filterTrainees = function(q){
-    var q2=q.toLowerCase();var el=document.getElementById('ttbl');if(!el)return;
-    el.querySelector('tbody').innerHTML=D.trainees.filter(function(t){return t.bid==='b82'&&(t.name.toLowerCase().includes(q2)||(t.nid||'').includes(q2));}).map(function(t){return '<tr><td>'+t.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+t.nid+'</td><td>'+t.score+'</td><td>'+pill('',t.perf)+'</td><td style="color:#8b92a8">'+t.sup+'</td><td>'+pill('',t.status)+'</td></tr>';}).join('');
-  };
-  window.addTraineeModal = function(){
-    showModal('<div class="mt2">Add Trainee to Batch 82</div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Full name</div><input class="fi" id="at1"/></div><div class="fr"><div class="fl">National ID</div><input class="fi" id="at2"/></div></div>'+
-    '<div class="fg2"><div class="fr"><div class="fl">Interview score</div><input class="fi" id="at3" type="number"/></div>'+
-    '<div class="fr"><div class="fl">Supporter</div><select class="fi" id="at4"><option>Sara Khalil</option><option>Ahmed Tarek</option></select></div></div>'+
-    '<div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveTrainee()">Add</button></div>');
-  };
-  window.saveTrainee = function(){
-    var n=document.getElementById('at1').value;if(!n){toast('Name required','r');return;}
-    var sc=parseFloat(document.getElementById('at3').value)||0;
-    D.trainees.push({id:'t'+Date.now(),bid:'b82',name:n,nid:document.getElementById('at2').value,score:sc,perf:sc>=80?'High':sc>=65?'Average':'Low',status:'Active',sup:document.getElementById('at4').value});
-    var b=D.batches.find(function(x){return x.id==='b82';});if(b)b.trainees++;
-    save();closeModal();toast(n+' added','g');gotoPage('ci');
-  };
+PG.sw = function(){
+  var d=getD(); var b=d.batches[0];
+  return '<div class="ph"><div class="pt">Weekly Report — Week '+b.week+'</div><div class="ps">'+b.name+'</div></div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Auto-generated</div>'+pill('g','Ready')+'</div>'+
+  '<table class="tbl"><tbody><tr><td>Attendance</td><td style="text-align:right;font-weight:600">'+b.att+'%</td></tr><tr><td>Pass rate</td><td style="text-align:right;font-weight:600">'+(b.pass?b.pass+'%':'Not assessed')+'</td></tr><tr><td>Outliers</td><td style="text-align:right;font-weight:600">'+b.out+'</td></tr><tr><td>Leavers</td><td style="text-align:right;font-weight:600">'+b.lv+'</td></tr><tr><td>Mistakes logged</td><td style="text-align:right;font-weight:600">'+d.mistakes.filter(function(m){return m.bid===b.id;}).length+'</td></tr></tbody></table></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Your Commentary</div></div>'+
+  '<div class="fr"><div class="fl">Key observation</div><textarea class="fi" id="wr1" placeholder="e.g. Trainees improving in Base..."></textarea></div>'+
+  '<div class="fr"><div class="fl">At-risk trainees & action</div><textarea class="fi" id="wr2"></textarea></div>'+
+  '<div class="fr"><div class="fl">Supporter note</div><textarea class="fi" id="wr3"></textarea></div>'+
+  '<div class="fr"><div class="fl">Recommendation</div><textarea class="fi" id="wr4"></textarea></div>'+
+  '<button class="btn btnp" onclick="subRep()">Submit Report</button></div></div>';
+};
+function subRep(){ var v=document.getElementById('wr1'); if(!v||!v.value){toast('Fill Key Observation','r');return;} var d=getD(); var b=d.batches[0]; d.reports.push({batch:b.name,week:b.week,date:new Date().toLocaleDateString(),status:'Submitted'}); saveD(); toast('Report submitted','g'); }
 
-  PAGES.ca = function(){
-    return '<div class="ph"><div class="pt">Attendance Overview</div><div class="ps">Batch 82 — Live</div></div>'+
-    '<div class="kg">'+kc('Present',18,'g','')+kc('Absent',2,'r','')+kc('Late',2,'a','')+kc('Online',0,'b','')+'</div>'+
-    '<div class="card"><div class="ch"><div class="ct">Supporter Submission Status</div></div>'+
-    '<table class="tbl"><thead><tr><th>Supporter</th><th>Trainees</th><th>Time</th><th>Status</th></tr></thead><tbody>'+
-    '<tr><td>Sara Khalil</td><td>'+D.trainees.filter(function(t){return t.sup==='Sara Khalil';}).length+'</td><td style="color:#5a6070">08:17 AM</td><td>'+pill('g','On Time')+'</td></tr>'+
-    '<tr><td>Ahmed Tarek</td><td>'+D.trainees.filter(function(t){return t.sup==='Ahmed Tarek';}).length+'</td><td style="color:#ef4444">Not submitted</td><td>'+pill('r','Alert Sent')+'</td></tr>'+
-    '</tbody></table></div>';
-  };
+PG.si = function(){
+  var d=getD();
+  var steps=['Incident documented','Evidence collected','Subject interviewed','Witness statements','Finding determined','Action documented','Outcome communicated'];
+  return '<div class="ph"><div class="pt">Investigations</div><div style="margin-top:10px"><button class="btn btnp bsm" onclick="openInvM()">+ Open Investigation</button></div></div>'+
+  (d.invs.length?d.invs.map(function(v,vi){
+    return '<div class="inv"><div class="invh"><div style="font-size:10px;font-family:monospace;color:#5a6070">'+v.id+' · '+v.dt+'</div>'+pillAuto(v.status)+'</div>'+
+    '<div style="font-size:13px;font-weight:600;margin-bottom:4px">'+v.type+' — '+v.ptype+': '+v.person+'</div>'+
+    '<div style="font-size:11px;color:#8b92a8;margin-bottom:10px">'+v.desc+'</div>'+
+    '<div style="font-size:11px;color:#5a6070;margin-bottom:6px">Checklist ('+v.steps.filter(Boolean).length+'/7):</div>'+
+    steps.map(function(s,i){return '<div class="cr" onclick="togStep('+vi+','+i+')"><div class="chk '+(v.steps[i]?'on':'')+'">'+( v.steps[i]?'✓':'')+' </div><div class="ckl">'+(i+1)+'. '+s+'</div></div>';}).join('')+
+    (v.status==='Open'?'<div style="margin-top:10px"><button class="btn btnsc bsm" onclick="clsInv('+vi+')">Close Investigation</button></div>':'')+
+    '</div>';
+  }).join(''):'<div class="card"><div style="color:#5a6070;font-size:12px">No investigations yet</div></div>');
+};
+function openInvM(){ showModal('<div class="mt2">Open Investigation</div><div class="fr"><div class="fl">Person</div><input class="fi" id="iv1"/></div><div class="fg2"><div class="fr"><div class="fl">Type</div><select class="fi" id="iv2"><option>Trainee</option><option>Supporter</option></select></div><div class="fr"><div class="fl">Category</div><select class="fi" id="iv3"><option>Policy</option><option>Performance</option><option>Behaviour</option><option>Attendance</option></select></div></div><div class="fr"><div class="fl">Description</div><textarea class="fi" id="iv4"></textarea></div><div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnd" onclick="crtInv()">Open</button></div>'); }
+function crtInv(){ var p=document.getElementById('iv1').value; if(!p){toast('Enter name','r');return;} var d=getD(); var id='INV-'+String(d.invs.length+10).padStart(3,'0'); d.invs.unshift({id:id,bid:'b82',dt:new Date().toISOString().split('T')[0],person:p,ptype:document.getElementById('iv2').value,type:document.getElementById('iv3').value,desc:document.getElementById('iv4').value,status:'Open',steps:[false,false,false,false,false,false,false]}); d.alerts.unshift({type:'r',txt:'New investigation '+id+': '+p,time:'Just now'}); saveD(); closeModal(); toast(id+' opened','g'); go(curPg); }
 
-  PAGES.cr = function(){
-    return '<div class="ph"><div class="pt">Room Reservations</div><div class="ps">Batch 82 — onsite days</div></div>'+
-    '<div class="card"><table class="tbl"><thead><tr><th>Day</th><th>Date</th><th>Room</th><th>Confirmed</th></tr></thead><tbody>'+
-    [{d:3,dt:'Mar 19',r:'Training Room A',c:true},{d:8,dt:'Mar 26',r:'Training Room A',c:true},{d:12,dt:'Apr 1',r:'Training Room B',c:true},{d:15,dt:'Apr 6',r:'',c:false},{d:16,dt:'Apr 7',r:'',c:false}].map(function(r){
-      return '<tr><td>Day '+r.d+'</td><td>'+r.dt+'</td><td>'+(r.r||'<select class="fi" style="padding:3px 6px;font-size:11px;width:150px"><option>— Assign —</option><option>Training Room A</option><option>Training Room B</option><option>Training Room C</option></select>')+'</td>'+
-      '<td>'+pill(r.c?'g':'a',r.c?'Confirmed':'Pending')+(r.c?'':'  <button class="btn btnp bsm" onclick="toast(\'Room confirmed\',\'g\')">Confirm</button>')+'</td></tr>';
-    }).join('')+'</tbody></table></div>';
-  };
+PG.pa = function(){
+  var d=getD(); var b=d.batches[0];
+  var myT=d.trainees.filter(function(t){return t.bid===b.id&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
+  if(!d.attState)d.attState={};
+  myT.forEach(function(t){if(!d.attState[t.id])d.attState[t.id]='Present';});
+  var lbl={Present:'Present',Late:'Late',Absent:'Absent',Online:'Online'};
+  return '<div class="ph"><div class="pt">Attendance — Day '+b.day+'</div><div class="ps">Submit by 8:30 AM · '+myT.length+' trainees</div></div>'+
+  '<div class="card"><div class="ch"><div class="ct">My Trainee Group</div></div>'+
+  myT.map(function(t){return '<div class="ar"><div class="an">'+t.name+'</div><div class="abs">'+
+  ['Present','Late','Absent','Online'].map(function(s){var cls={Present:'ap',Late:'al2',Absent:'aa',Online:'ao'}[s]; return '<button class="ab '+(d.attState[t.id]===s?cls:'')+'" onclick="setA(\''+t.id+'\',\''+s+'\')">'+lbl[s]+'</button>';}).join('')+
+  '</div></div>';}).join('')+
+  '<div style="margin-top:14px;display:flex;gap:8px"><button class="btn btnp" onclick="subAtt()">Submit</button><button class="btn btns" onclick="allP()">All Present</button></div></div>';
+};
+function setA(tid,st){ var d=getD(); d.attState[tid]=st; saveD(); go('pa'); }
+function allP(){ var d=getD(); d.trainees.filter(function(t){return t.sup==='Sara Khalil';}).forEach(function(t){d.attState[t.id]='Present';}); saveD(); go('pa'); }
+function subAtt(){ saveD(); toast('Attendance submitted at '+new Date().toLocaleTimeString(),'g'); }
 
-  PAGES.cl = function(){
-    var active=D.trainees.filter(function(t){return t.bid==='b82'&&t.status==='Active';});
-    return '<div class="ph"><div class="pt">Leaver Records</div><div class="ps">Batch 82 — '+D.leavers.length+' leavers</div></div>'+
-    '<div class="two"><div class="card"><div class="ch"><div class="ct">Submit Leaver Record</div></div>'+
-    '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="lv1"><option value="">— Select —</option>'+active.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
-    '<div class="fr"><div class="fl">Date</div><input class="fi" id="lv2" type="date" value="'+new Date().toISOString().split('T')[0]+'"/></div>'+
-    '<div class="fr"><div class="fl">Reason</div><select class="fi" id="lv3"><option>Fail</option><option>Dropout</option><option>Other</option></select></div>'+
-    '<div class="fr"><div class="fl">Final Check score (if Fail)</div><input class="fi" id="lv4" type="number" placeholder="e.g. 58"/></div>'+
-    '<button class="btn btnp" onclick="subLeaver()">Submit</button></div>'+
-    '<div class="card"><div class="ch"><div class="ct">Leavers</div></div>'+
-    '<table class="tbl"><thead><tr><th>Name</th><th>Date</th><th>Reason</th><th>Score</th></tr></thead><tbody>'+
-    D.leavers.map(function(l){return '<tr><td>'+l.name+'</td><td>'+l.dt+'</td><td>'+pill(l.reason==='Fail'?'r':'a',l.reason)+'</td><td>'+(l.score||'—')+'</td></tr>';}).join('')+
-    '</tbody></table></div></div>';
-  };
-  window.subLeaver = function(){
-    var tid=document.getElementById('lv1').value;var t=D.trainees.find(function(x){return x.id===tid;});
-    if(!t){toast('Select a trainee','r');return;}
-    t.status='Leaver';
-    var b=D.batches.find(function(x){return x.id==='b82';});if(b)b.lv++;
-    D.leavers.push({id:'lv'+Date.now(),bid:'b82',name:t.name,dt:document.getElementById('lv2').value,reason:document.getElementById('lv3').value,score:document.getElementById('lv4').value||null});
-    D.alerts.unshift({type:'a',txt:'Leaver: '+t.name+' — '+document.getElementById('lv3').value,time:'Just now'});
-    save();toast(t.name+' marked as leaver','g');gotoPage('cl');
-  };
+PG.pm = function(){
+  var d=getD(); var b=d.batches[0];
+  var myT=d.trainees.filter(function(t){return t.bid===b.id&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
+  var myL=d.mistakes.filter(function(m){return m.sup==='Sara Khalil';});
+  var cats=['Missed event','Wrong event type','Incorrect player attribution','Wrong timestamp','Formation misidentification','Wrong pressure classification','Incorrect location zone','Freeze frame missed','Validation error'];
+  return '<div class="ph"><div class="pt">Mistake Log</div><div class="ps">After each passive review block</div></div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Log a Mistake</div></div>'+
+  '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="ml1"><option value="">— Select —</option>'+myT.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
+  '<div class="fg2"><div class="fr"><div class="fl">Task</div><select class="fi" id="ml2">'+['Base','Pressure','Extras','Players','Location','Freeze Frame','Validation'].map(function(t){return '<option>'+t+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Severity</div><select class="fi" id="ml3"><option>Minor</option><option>Major</option></select></div></div>'+
+  '<div class="fr"><div class="fl">Error Category</div><select class="fi" id="ml4">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Description</div><input class="fi" id="ml5" placeholder="Brief description..."/></div>'+
+  '<button class="btn btnp" onclick="subMist()">Log Mistake</button></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Recent Log</div><span style="font-size:11px;color:#5a6070">'+myL.length+'</span></div>'+
+  '<table class="tbl"><thead><tr><th>Trainee</th><th>Category</th><th>Task</th><th>Sev.</th></tr></thead><tbody>'+
+  myL.slice(-8).map(function(l){return '<tr><td>'+l.tn+'</td><td style="color:#8b92a8">'+l.cat+'</td><td>'+l.task+'</td><td>'+pillAuto(l.sev==='Major'?'Fail':'Pending')+'</td></tr>';}).join('')+
+  '</tbody></table></div></div>';
+};
+function subMist(){ var d=getD(); var tid=document.getElementById('ml1').value; var t=d.trainees.find(function(x){return x.id===tid;}); if(!t){toast('Select a trainee','r');return;} var cat=document.getElementById('ml4').value; var task=document.getElementById('ml2').value; d.mistakes.push({id:'m'+Date.now(),bid:'b82',tid:tid,tn:t.name,task:task,cat:cat,sev:document.getElementById('ml3').value,sup:'Sara Khalil',dt:new Date().toISOString().split('T')[0]}); var cnt=d.mistakes.filter(function(m){return m.tid===tid&&m.cat===cat;}).length; if(cnt>=3){d.alerts.unshift({type:'r',txt:t.name+': '+cnt+'x "'+cat+'"',time:'Just now'});toast('⚠ Persistent ('+cnt+'x) — alert sent','r');}else toast('Logged','g'); saveD(); go('pm'); }
 
-})(); // end IIFE
+PG.pf = function(){
+  var d=getD(); var b=d.batches[0];
+  var myT=d.trainees.filter(function(t){return t.bid===b.id&&t.sup==='Sara Khalil'&&t.status!=='Leaver';});
+  var myF=d.feedback.filter(function(f){return f.sup==='Sara Khalil';});
+  var cats=['Missed event','Wrong event type','Wrong timestamp','Formation misidentification','Wrong pressure classification'];
+  return '<div class="ph"><div class="pt">Feedback Log</div><div class="ps">After each individual meeting — min 15 min</div></div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Log a Session</div></div>'+
+  '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="fb1"><option value="">— Select —</option>'+myT.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Task discussed</div><select class="fi" id="fb2">'+['Base','Pressure','Location','Freeze Frame'].map(function(t){return '<option>'+t+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Top mistake</div><select class="fi" id="fb3">'+cats.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Action agreed</div><input class="fi" id="fb4" placeholder="e.g. Re-watch tutorial..."/></div>'+
+  '<div class="fr"><div class="fl">Improvement</div><select class="fi" id="fb5"><option>First Session</option><option>Better</option><option>Same</option><option>Worse</option></select></div>'+
+  '<button class="btn btnp" onclick="subFb()">Log Session</button></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Improvement Trends</div></div>'+
+  '<table class="tbl"><thead><tr><th>Trainee</th><th>Date</th><th>Trend</th></tr></thead><tbody>'+
+  myF.map(function(f){return '<tr><td>'+f.tn+'</td><td style="color:#5a6070">'+f.dt+'</td><td>'+pill(f.imp==='Better'?'g':f.imp==='Worse'?'r':f.imp==='Same'?'a':'b',f.imp)+'</td></tr>';}).join('')+
+  '</tbody></table></div></div>';
+};
+function subFb(){ var d=getD(); var tid=document.getElementById('fb1').value; var t=d.trainees.find(function(x){return x.id===tid;}); if(!t){toast('Select trainee','r');return;} d.feedback.push({id:'f'+Date.now(),bid:'b82',tid:tid,tn:t.name,task:document.getElementById('fb2').value,action:document.getElementById('fb4').value,imp:document.getElementById('fb5').value,dt:new Date().toISOString().split('T')[0],sup:'Sara Khalil'}); saveD(); toast('Session logged','g'); go('pf'); }
+
+PG.pe = function(){
+  var d=getD();
+  if(!d.eodCks)d.eodCks={};
+  var items=[{k:'att',l:'Attendance submitted by 8:30 AM'},{k:'pol',l:'Policy items checked'},{k:'out',l:'Outlier flags reviewed'},{k:'lv',l:'Leaver events submitted (if any)'},{k:'sch',l:"Tomorrow's schedule posted to WhatsApp"}];
+  return '<div class="ph"><div class="pt">End-of-Day Form</div><div class="ps">Submit before end of shift</div></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Daily Checklist</div></div>'+
+  items.map(function(item){return '<div class="cr" onclick="togCk(\''+item.k+'\')"><div class="chk '+(d.eodCks[item.k]?'on':'')+'">'+( d.eodCks[item.k]?'✓':'')+' </div><div class="ckl">'+item.l+'</div></div>';}).join('')+
+  '<div class="fr" style="margin-top:14px"><div class="fl">Escalation?</div><select class="fi" id="esc1"><option value="">No</option><option value="y">Yes</option></select></div>'+
+  '<div class="fr"><div class="fl">Escalation detail</div><textarea class="fi" id="esc2" placeholder="Describe..."></textarea></div>'+
+  '<button class="btn btnp" onclick="subEod()">Submit EOD Form</button></div>';
+};
+function togCk(k){ var d=getD(); if(!d.eodCks)d.eodCks={}; d.eodCks[k]=!d.eodCks[k]; saveD(); go('pe'); }
+function subEod(){ var d=getD(); var done=Object.values(d.eodCks||{}).filter(Boolean).length; if(done<3){toast('Complete at least 3 items','r');return;} var esc=document.getElementById('esc1').value; if(esc==='y'&&!document.getElementById('esc2').value){toast('Describe the escalation','r');return;} if(esc==='y')d.alerts.unshift({type:'a',txt:'EOD escalation: '+document.getElementById('esc2').value,time:'Just now'}); d.eodCks={}; saveD(); toast('EOD form submitted','g'); go('pe'); }
+
+PG.ps = function(){
+  var d=getD(); var b=d.batches[0]; var nd=b.day+1;
+  var sch={3:'online',5:'onsite',8:'onsite',10:'online',12:'onsite',15:'onsite',16:'onsite',20:'onsite',21:'onsite',25:'onsite'};
+  var type=sch[nd]||'online';
+  var tom=new Date(); tom.setDate(tom.getDate()+1);
+  var tasks=nd<=5?'Base · Players · Extras':nd<=10?'Pressure · Formations & Facts':nd<=15?'Location · Freeze Frame · Formations & Facts':nd<=20?'Validation · Formations & Facts':'Full task (45 min pace)';
+  var msg='📅 Day '+nd+' — '+tom.toDateString()+'\n\n'+(type==='onsite'?'📍 ONSITE — Training Room\n':'💻 ONLINE — Remote\n')+'⏰ Start: 9:00 AM\n\n✅ Tasks:\n• '+tasks+'\n\n📌 No phones during task blocks\n📖 Reply ✅ to confirm.';
+  return '<div class="ph"><div class="pt">Daily Schedule</div><div class="ps">Day '+nd+' tomorrow</div></div>'+
+  '<div class="card"><div class="ch"><div class="ct">WhatsApp Message</div></div><div class="wa" id="wam">'+msg+'</div>'+
+  '<div class="wac" onclick="cpyMsg()">📋 Copy to clipboard</div></div>';
+};
+function cpyMsg(){ var el=document.getElementById('wam'); if(!el)return; navigator.clipboard.writeText(el.textContent).then(function(){toast('Copied — paste into WhatsApp','g');}).catch(function(){toast('Select text and copy manually','b');}); }
+
+PG.cb = function(){
+  var d=getD();
+  return '<div class="ph"><div class="pt">Batch Setup</div><div style="margin-top:10px"><button class="btn btnp bsm" onclick="crtBM()">+ Create Batch</button></div></div>'+
+  '<div class="card"><table class="tbl"><thead><tr><th>Batch</th><th>Dept</th><th>Day</th><th>Trainees</th><th>Health</th></tr></thead><tbody>'+
+  d.batches.map(function(b){return '<tr><td>'+b.name+'</td><td>'+b.dept+'</td><td>Day '+b.day+'</td><td>'+b.trainees+'</td><td>'+pillAuto(b.health==='green'?'Active':b.health==='amber'?'Pending':'Fail')+'</td></tr>';}).join('')+
+  '</tbody></table></div>';
+};
+function crtBM(){ showModal('<div class="mt2">Create New Batch</div><div class="fr"><div class="fl">Batch name</div><input class="fi" id="nb1" placeholder="e.g. Batch 84 — Soccer"/></div><div class="fg2"><div class="fr"><div class="fl">Department</div><select class="fi" id="nb2"><option>Soccer</option><option>AMF</option></select></div><div class="fr"><div class="fl">Pass threshold %</div><input class="fi" id="nb3" type="number" value="70"/></div></div><div class="fr"><div class="fl">Start date</div><input class="fi" id="nb4" type="date" value="'+new Date().toISOString().split('T')[0]+'"/></div><div class="fr"><div class="fl">Supervisor</div><select class="fi" id="nb5"><option>Karim Hassan</option><option>Layla Ibrahim</option><option>Rami Saad</option></select></div><div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveBatch()">Create</button></div>'); }
+function saveBatch(){ var n=document.getElementById('nb1').value; if(!n){toast('Enter name','r');return;} getD().batches.push({id:'b'+Date.now(),name:n,dept:document.getElementById('nb2').value,day:1,week:1,trainees:0,start:document.getElementById('nb4').value,thr:parseInt(document.getElementById('nb3').value)||70,sup:document.getElementById('nb5').value,health:'green',att:0,pass:null,out:0,lv:0}); saveD(); closeModal(); toast(n+' created','g'); go('cb'); }
+
+PG.ci = function(){
+  var d=getD(); var b82=d.trainees.filter(function(t){return t.bid==='b82';});
+  return '<div class="ph"><div class="pt">Trainee Intake</div><div class="ps">Batch 82 · '+b82.length+' enrolled</div><div style="margin-top:10px"><button class="btn btnp bsm" onclick="addTM()">+ Add Trainee</button></div></div>'+
+  '<div class="card"><input class="si2" placeholder="Search..." oninput="filtT(this.value)"/>'+
+  '<table class="tbl" id="ttbl"><thead><tr><th>Name</th><th>National ID</th><th>Score</th><th>Perf.</th><th>Supporter</th><th>Status</th></tr></thead>'+
+  '<tbody>'+b82.map(tRow).join('')+'</tbody></table></div>';
+};
+function tRow(t){ return '<tr><td>'+t.name+'</td><td style="font-family:monospace;font-size:11px;color:#5a6070">'+t.nid+'</td><td>'+t.score+'</td><td>'+pillAuto(t.perf)+'</td><td style="color:#8b92a8">'+t.sup+'</td><td>'+pillAuto(t.status)+'</td></tr>'; }
+function filtT(q){ var el=document.getElementById('ttbl'); if(!el)return; var q2=q.toLowerCase(); el.querySelector('tbody').innerHTML=getD().trainees.filter(function(t){return t.bid==='b82'&&(t.name.toLowerCase().includes(q2)||(t.nid||'').includes(q2));}).map(tRow).join(''); }
+function addTM(){ showModal('<div class="mt2">Add Trainee</div><div class="fg2"><div class="fr"><div class="fl">Full name</div><input class="fi" id="at1"/></div><div class="fr"><div class="fl">National ID</div><input class="fi" id="at2"/></div></div><div class="fg2"><div class="fr"><div class="fl">Interview score</div><input class="fi" id="at3" type="number"/></div><div class="fr"><div class="fl">Supporter</div><select class="fi" id="at4"><option>Sara Khalil</option><option>Ahmed Tarek</option></select></div></div><div class="mact"><button class="btn btns" onclick="closeModal()">Cancel</button><button class="btn btnp" onclick="saveTr()">Add</button></div>'); }
+function saveTr(){ var n=document.getElementById('at1').value; if(!n){toast('Name required','r');return;} var sc=parseFloat(document.getElementById('at3').value)||0; var d=getD(); d.trainees.push({id:'t'+Date.now(),bid:'b82',name:n,nid:document.getElementById('at2').value,score:sc,perf:sc>=80?'High':sc>=65?'Average':'Low',status:'Active',sup:document.getElementById('at4').value}); var b=d.batches.find(function(x){return x.id==='b82';}); if(b)b.trainees++; saveD(); closeModal(); toast(n+' added','g'); go('ci'); }
+
+PG.ca = function(){
+  var d=getD(); var b=d.batches[0];
+  return '<div class="ph"><div class="pt">Attendance Overview</div><div class="ps">'+b.name+' — Today</div></div>'+
+  '<div class="kg">'+kc('Present',18,'g','')+kc('Absent',2,'r','')+kc('Late',2,'a','')+kc('Online',0,'b','')+'</div>'+
+  '<div class="card"><div class="ch"><div class="ct">Supporter Submission Status</div></div>'+
+  '<table class="tbl"><thead><tr><th>Supporter</th><th>Trainees</th><th>Time</th><th>Status</th></tr></thead><tbody>'+
+  '<tr><td>Sara Khalil</td><td>'+d.trainees.filter(function(t){return t.sup==='Sara Khalil';}).length+'</td><td style="color:#5a6070">08:17 AM</td><td>'+pill('g','On Time')+'</td></tr>'+
+  '<tr><td>Ahmed Tarek</td><td>'+d.trainees.filter(function(t){return t.sup==='Ahmed Tarek';}).length+'</td><td style="color:#ef4444">Not submitted</td><td>'+pill('r','Alert Sent')+'</td></tr>'+
+  '</tbody></table></div>';
+};
+
+PG.croom = function(){
+  return '<div class="ph"><div class="pt">Room Reservations</div><div class="ps">Batch 82</div></div>'+
+  '<div class="card"><table class="tbl"><thead><tr><th>Day</th><th>Date</th><th>Room</th><th>Status</th><th></th></tr></thead><tbody>'+
+  [{d:3,dt:'Mar 19',r:'Training Room A',c:true},{d:8,dt:'Mar 26',r:'Training Room A',c:true},{d:12,dt:'Apr 1',r:'Training Room B',c:true},{d:15,dt:'Apr 6',r:'',c:false},{d:16,dt:'Apr 7',r:'',c:false}].map(function(r){
+    return '<tr><td>Day '+r.d+'</td><td>'+r.dt+'</td><td>'+(r.r||'<select class="fi" style="padding:3px 6px;font-size:11px;width:150px"><option>— Assign —</option><option>Training Room A</option><option>Training Room B</option></select>')+'</td>'+
+    '<td>'+pill(r.c?'g':'a',r.c?'Confirmed':'Pending')+'</td>'+
+    '<td>'+(r.c?'':`<button class="btn btnp bsm" onclick="toast('Room confirmed','g')">Confirm</button>`)+'</td></tr>';
+  }).join('')+'</tbody></table></div>';
+};
+
+PG.cl = function(){
+  var d=getD(); var active=d.trainees.filter(function(t){return t.bid==='b82'&&t.status==='Active';});
+  return '<div class="ph"><div class="pt">Leaver Records</div><div class="ps">Batch 82 — '+d.leavers.length+' leavers</div></div>'+
+  '<div class="two"><div class="card"><div class="ch"><div class="ct">Submit Leaver</div></div>'+
+  '<div class="fr"><div class="fl">Trainee</div><select class="fi" id="lv1"><option value="">— Select —</option>'+active.map(function(t){return '<option value="'+t.id+'">'+t.name+'</option>';}).join('')+'</select></div>'+
+  '<div class="fr"><div class="fl">Date</div><input class="fi" id="lv2" type="date" value="'+new Date().toISOString().split('T')[0]+'"/></div>'+
+  '<div class="fr"><div class="fl">Reason</div><select class="fi" id="lv3"><option>Fail</option><option>Dropout</option><option>Other</option></select></div>'+
+  '<div class="fr"><div class="fl">FC Score (if Fail)</div><input class="fi" id="lv4" type="number" placeholder="e.g. 58"/></div>'+
+  '<button class="btn btnp" onclick="subLv()">Submit</button></div>'+
+  '<div class="card"><div class="ch"><div class="ct">Leavers</div></div>'+
+  '<table class="tbl"><thead><tr><th>Name</th><th>Date</th><th>Reason</th><th>Score</th></tr></thead><tbody>'+
+  d.leavers.map(function(l){return '<tr><td>'+l.name+'</td><td>'+l.dt+'</td><td>'+pillAuto(l.reason==='Fail'?'Fail':l.reason==='Dropout'?'Pending':'Pending')+'</td><td>'+(l.score||'—')+'</td></tr>';}).join('')+
+  '</tbody></table></div></div>';
+};
+function subLv(){ var d=getD(); var tid=document.getElementById('lv1').value; var t=d.trainees.find(function(x){return x.id===tid;}); if(!t){toast('Select trainee','r');return;} t.status='Leaver'; var b=d.batches.find(function(x){return x.id==='b82';}); if(b)b.lv++; d.leavers.push({id:'lv'+Date.now(),bid:'b82',name:t.name,dt:document.getElementById('lv2').value,reason:document.getElementById('lv3').value,score:document.getElementById('lv4').value||null}); d.alerts.unshift({type:'a',txt:'Leaver: '+t.name,time:'Just now'}); saveD(); toast(t.name+' marked as leaver','g'); go('cl'); }
 </script>
 </body>
 </html>
